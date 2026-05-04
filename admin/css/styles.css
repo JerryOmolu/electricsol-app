@@ -1,0 +1,24 @@
+.icon {
+    white-space: nowrap;
+    background: dodgerblue;
+    padding: 15px;
+    color: white;
+    min-width: 50px;
+    text-align: center;
+    vertical-align: bottom;
+}
+
+.fa {
+    display: inline-block;
+    font: normal normal normal 14px / 1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    outline: none;
+}
