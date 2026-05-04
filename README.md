@@ -1,3 +1,0 @@
-# Affan - PWA Mobile Template
------------------------------
-
