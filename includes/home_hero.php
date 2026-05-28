@@ -1,66 +1,101 @@
 <div class="tiny-slider-one-wrapper">
   <div class="tiny-slider-one">
 
-    <!-- Single Hero Slide -->
+    <!-- Slide -->
     <div>
-      <div class="single-hero-slide bg-overlay" style="background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('img/electrisol-img/calculator.jpg') center/cover no-repeat;">
-        <div class="h-100 d-flex align-items-center text-center">
-          <div class="container">
-            <h2 class="fw-bold text-white mb-3 animate__animated animate__fadeInDown">Energy Consumption Calculator</h2>
-            <p class="text-white-50 mb-4 animate__animated animate__fadeInUp">Get a comprehensive energy consumption calculation for Devices/Appliances at your fingertips.</p>
-            <a class="btn btn-warning btn-lg rounded-pill custom-btn animate__animated animate__fadeInUp" href="energy">Get Started <i class="bi bi-arrow-right-circle ms-2"></i></a>
+      <div class="single-hero-slide hero-bg"
+        style="background-image:url('img/electrisol-img/calculator.jpg');">
+        <div class="hero-overlay">
+          <div class="container text-center">
+            <div class="hero-content glass-card">
+              <h2 class="fw-bold text-white mb-3">Energy Consumption Calculator</h2>
+              <p class="text-white-50 mb-4">
+                Get a comprehensive energy consumption calculation for Devices/Appliances at your fingertips.
+              </p>
+              <a class="btn btn-warning btn-lg rounded-pill hero-btn" href="energy">
+                Get Started <i class="bi bi-arrow-right-circle ms-2"></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Single Hero Slide -->
+    <!-- Slide -->
     <div>
-      <div class="single-hero-slide bg-overlay" style="background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('img/electrisol-img/solar.jpg') center/cover no-repeat;">
-        <div class="h-100 d-flex align-items-center text-center">
-          <div class="container">
-            <h2 class="fw-bold text-white mb-3 animate__animated animate__fadeInDown">Renewable Energy Solutions</h2>
-            <p class="text-white-50 mb-4 animate__animated animate__fadeInUp">We are committed to promoting green energy and reducing carbon emissions.</p>
-            <a class="btn btn-warning btn-lg rounded-pill custom-btn animate__animated animate__fadeInUp" href="contact">Contact Us <i class="bi bi-arrow-right-circle ms-2"></i></a>
+      <div class="single-hero-slide hero-bg"
+        style="background-image:url('img/electrisol-img/solar.jpg');">
+        <div class="hero-overlay">
+          <div class="container text-center">
+            <div class="hero-content glass-card">
+              <h2 class="fw-bold text-white mb-3">Renewable Energy Solutions</h2>
+              <p class="text-white-50 mb-4">
+                We are committed to promoting green energy and reducing carbon emissions.
+              </p>
+              <a class="btn btn-warning btn-lg rounded-pill hero-btn" href="contact">
+                Contact Us <i class="bi bi-arrow-right-circle ms-2"></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Single Hero Slide -->
+    <!-- Slide -->
     <div>
-      <div class="single-hero-slide bg-overlay" style="background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('img/electrisol-img/power.jpg') center/cover no-repeat;">
-        <div class="h-100 d-flex align-items-center text-center">
-          <div class="container">
-            <h2 class="fw-bold text-white mb-3 animate__animated animate__fadeInDown">Power Infrastructure Development</h2>
-            <p class="text-white-50 mb-4 animate__animated animate__fadeInUp">Electricsol undertakes the design, engineering, and implementation of power infrastructure projects for distribution companies.</p>
-            <a class="btn btn-warning btn-lg rounded-pill custom-btn animate__animated animate__fadeInUp" href="contact">Contact Us <i class="bi bi-arrow-right-circle ms-2"></i></a>
+      <div class="single-hero-slide hero-bg"
+        style="background-image:url('img/electrisol-img/power.jpg');">
+        <div class="hero-overlay">
+          <div class="container text-center">
+            <div class="hero-content glass-card">
+              <h2 class="fw-bold text-white mb-3">Power Infrastructure Development</h2>
+              <p class="text-white-50 mb-4">
+                Electricsol undertakes design, engineering, and implementation of power infrastructure projects.
+              </p>
+              <a class="btn btn-warning btn-lg rounded-pill hero-btn" href="contact">
+                Contact Us <i class="bi bi-arrow-right-circle ms-2"></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Single Hero Slide -->
+    <!-- Slide -->
     <div>
-      <div class="single-hero-slide bg-overlay" style="background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('img/electrisol-img/grid.jpg') center/cover no-repeat;">
-        <div class="h-100 d-flex align-items-center text-center">
-          <div class="container">
-            <h2 class="fw-bold text-white mb-3 animate__animated animate__fadeInDown">Smart Grid Solutions</h2>
-            <p class="text-white-50 mb-4 animate__animated animate__fadeInUp">Electricsol integrates smart grid technologies to optimize energy distribution and consumption, enabling clients to monitor, manage, and control electricity flow effectively.</p>
-            <a class="btn btn-warning btn-lg rounded-pill custom-btn animate__animated animate__fadeInUp" href="contact">Contact Us <i class="bi bi-arrow-right-circle ms-2"></i></a>
+      <div class="single-hero-slide hero-bg"
+        style="background-image:url('img/electrisol-img/grid.jpg');">
+        <div class="hero-overlay">
+          <div class="container text-center">
+            <div class="hero-content glass-card">
+              <h2 class="fw-bold text-white mb-3">Smart Grid Solutions</h2>
+              <p class="text-white-50 mb-4">
+                Optimize energy distribution with intelligent monitoring and control systems.
+              </p>
+              <a class="btn btn-warning btn-lg rounded-pill hero-btn" href="contact">
+                Contact Us <i class="bi bi-arrow-right-circle ms-2"></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Single Hero Slide -->
+    <!-- Slide -->
     <div>
-      <div class="single-hero-slide bg-overlay" style="background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('img/electrisol-img/worker.jpg') center/cover no-repeat;">
-        <div class="h-100 d-flex align-items-center text-center">
-          <div class="container">
-            <h2 class="fw-bold text-white mb-3 animate__animated animate__fadeInDown">Construction & Operations Management</h2>
-            <p class="text-white-50 mb-4 animate__animated animate__fadeInUp">We manage construction and operations services for optimized energy distribution and sustainable performance.</p>
-            <a class="btn btn-warning btn-lg rounded-pill custom-btn animate__animated animate__fadeInUp" href="contact">Contact Us <i class="bi bi-arrow-right-circle ms-2"></i></a>
+      <div class="single-hero-slide hero-bg"
+        style="background-image:url('img/electrisol-img/worker.jpg');">
+        <div class="hero-overlay">
+          <div class="container text-center">
+            <div class="hero-content glass-card">
+              <h2 class="fw-bold text-white mb-3">Construction & Operations Management</h2>
+              <p class="text-white-50 mb-4">
+                We manage construction and operations for sustainable energy distribution.
+              </p>
+              <a class="btn btn-warning btn-lg rounded-pill hero-btn" href="contact">
+                Contact Us <i class="bi bi-arrow-right-circle ms-2"></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -68,23 +103,80 @@
 
   </div>
 </div>
-
-<!-- Custom CSS -->
 <style>
-  .custom-btn {
-    transition: all 0.3s ease-in-out;
+/* Slide base */
+.single-hero-slide.hero-bg {
+  min-height: 92vh;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Dark modern overlay (gradient depth) */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at center,
+      rgba(0,0,0,0.35),
+      rgba(0,0,0,0.75)
+  );
+  display: flex;
+  align-items: center;
+}
+
+/* Glass content box */
+.glass-card {
+  max-width: 720px;
+  margin: auto;
+  padding: 30px 25px;
+  border-radius: 18px;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  animation: floatIn 0.8s ease;
+}
+
+/* Button modern feel */
+.hero-btn {
+  transition: all 0.3s ease;
+  font-weight: 600;
+  padding: 12px 26px;
+}
+
+.hero-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(255, 193, 7, 0.45);
+}
+
+/* Smooth entrance animation */
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
   }
-  .custom-btn:hover {
-    transform: scale(1.07);
-    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.6);
-    border: 2px solid #ffc107;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .single-hero-slide {
-    min-height: 90vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .glass-card {
+    padding: 22px 18px;
+    border-radius: 14px;
   }
+
+  .glass-card h2 {
+    font-size: 20px;
+  }
+
+  .glass-card p {
+    font-size: 13px;
+  }
+}
 </style>
-
-
