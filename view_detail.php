@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <?php include "includes/home_header.php"; ?>
   <!-- Preloader -->
   <div id="preloader">
@@ -70,25 +71,36 @@
     </div>
 
     <div class="card shadow-sm mb-3">
-      <div class="card-body">
-        <div class="standard-tab">
+  <div class="card-body">
+    <div class="standard-tab">
 
 <?php
-if(isset($_GET['id'])){
-    $id = escape($_GET['id']);
-    $query = "SELECT * FROM device WHERE device_id = '$id'";
-    $view_detail = mysqli_query($connection, $query);
-    while($row = mysqli_fetch_assoc($view_detail)){
-        $device_id = escape($row['device_id']);
-        $device_owner_name = escape($row['device_owner_name']);
-        $phone = escape($row['phone']);
-        $device_name_one = escape($row['device_name_one']);
-        $device_name_two = escape($row['device_name_two']);
-        $power = escape($row['power']);
-        $usage_time = escape($row['usage_time']);
-        $remaining_time = escape($row['remaining_time']);
-        $energy_consumed = escape($row['energy_consumed']);
-        $usage_time_hour = round($usage_time/3600, 2);
+$usage_time = 0; // prevent undefined issues
+
+/* =========================
+   FETCH DEVICE (PDO OPTIMIZED)
+========================= */
+if (isset($_GET['id'])) {
+
+    $id = (int) $_GET['id'];
+
+    $stmt = $pdo->prepare("SELECT * FROM device WHERE device_id = ? LIMIT 1");
+    $stmt->execute([$id]);
+    $device = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($device) {
+
+        $device_id          = $device['device_id'];
+        $device_owner_name  = htmlspecialchars($device['device_owner_name']);
+        $phone              = htmlspecialchars($device['phone']);
+        $device_name_one    = htmlspecialchars($device['device_name_one']);
+        $device_name_two    = htmlspecialchars($device['device_name_two']);
+        $power              = (float) $device['power'];
+        $usage_time         = (int) $device['usage_time'];
+        $remaining_time     = $device['remaining_time'];
+        $energy_consumed    = $device['energy_consumed'];
+
+        $usage_time_hour = round($usage_time / 3600, 2);
 
         echo "
         <!-- Device Info Tabs -->
@@ -103,7 +115,9 @@ if(isset($_GET['id'])){
 
         <div class='tab-content rounded shadow-sm p-3' id='deviceTabsContent'>
           <div class='tab-pane fade show active' id='energy' role='tabpanel' aria-labelledby='energy-tab'>
+
             <div class='row text-center g-3'>
+
               <div class='col-md-4'>
                 <div class='card border-light shadow-sm'>
                   <div class='card-body'>
@@ -112,6 +126,7 @@ if(isset($_GET['id'])){
                   </div>
                 </div>
               </div>
+
               <div class='col-md-4'>
                 <div class='card border-light shadow-sm'>
                   <div class='card-body'>
@@ -120,6 +135,7 @@ if(isset($_GET['id'])){
                   </div>
                 </div>
               </div>
+
               <div class='col-md-4'>
                 <div class='card border-light shadow-sm'>
                   <div class='card-body'>
@@ -128,7 +144,9 @@ if(isset($_GET['id'])){
                   </div>
                 </div>
               </div>
+
             </div>
+
           </div>
         </div>
         ";
@@ -137,6 +155,7 @@ if(isset($_GET['id'])){
 ?>
 
     <!-- Switch On Button -->
+<!--
     <div class="text-center mt-4">
       <form id="myForm" action="" method="post">
         <button class="btn btn-success btn-lg" type="submit" name="on_device">
@@ -144,40 +163,48 @@ if(isset($_GET['id'])){
         </button>
       </form>
     </div>
+-->
 
 <?php
-if(isset($_POST['on_device'])){
+/* =========================
+   SWITCH ON LOGIC (OPTIMIZED)
+========================= */
+
+if (isset($_POST['on_device'])) {
+
+    if (!isset($usage_time) || $usage_time <= 0) {
+        $usage_time = 0;
+    }
+
     $current_time = time();
     $end_time = $current_time + $usage_time;
 
     $start_display = date('F j, Y H:i:s A', $current_time);
-    $end_display = date('F j, Y H:i:s A', $end_time);
+    $end_display   = date('F j, Y H:i:s A', $end_time);
 
     echo "
     <div class='mt-4'>
-      <div class='alert alert-info text-center'><strong>Start Time:</strong> $start_display</div>
-      <div class='alert alert-success text-center'><strong>Usage Time:</strong> {$usage_time} Seconds</div>
-      <div class='alert alert-warning text-center'><strong>End Time:</strong> $end_display</div>
 
-      <div class='text-center mt-3'>
-        <a href='https://logwork.com/countdown-timer' class='countdown-timer' 
-           data-timezone='Africa/Lagos' 
-           data-textcolor='#f7f4f4' 
-           data-background='#111c4a' 
-           data-digitscolor='#fcfcfc' 
-           data-unitscolor='#111a1a' 
-           data-date='$end_display'>
-          Energy Countdown Timer
-        </a>
+      <div class='alert alert-info text-center'>
+        <strong>Start Time:</strong> $start_display
       </div>
+
+      <div class='alert alert-success text-center'>
+        <strong>Usage Time:</strong> {$usage_time} Seconds
+      </div>
+
+      <div class='alert alert-warning text-center'>
+        <strong>End Time:</strong> $end_display
+      </div>
+
     </div>
     ";
 }
 ?>
 
-        </div>
-      </div>
     </div>
+  </div>
+</div>
   </div>
 </div>
 

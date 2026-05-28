@@ -1,10 +1,4 @@
 <?php include "includes/header.php"; ?>
-<!-- Preloader -->
-<div id="preloader">
-<div class="spinner-grow text-primary" role="status">
-<span class="visually-hidden">Loading...</span>
-</div>
-</div>
 
 <!-- Internet Connection Status -->
 <div class="internet-connection-status" id="internetStatus"></div>

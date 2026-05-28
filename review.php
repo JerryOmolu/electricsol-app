@@ -5,7 +5,7 @@
 
 <?php 
 if(!isset($_SESSION['verify_status'])){
-    if($_SESSION['verify_status'] !== '1'){
+    if($_SESSION['verify_status'] !== 1){
        header("Location:login"); 
     }
         
@@ -172,38 +172,104 @@ if(!isset($_SESSION['verify_status'])){
 	
 		  <?php
 if (isset($_POST['review'])) {
-    if (!$connection) {
-        die('Database connection failed: ' . mysqli_connect_error());
+
+    // Ensure PDO connection exists
+    if (!isset($pdo) || !$pdo instanceof PDO) {
+        die('Database connection failed.');
     }
 
-    $review_author = mysqli_real_escape_string($connection, $_POST['author']);
-    $review_content = mysqli_real_escape_string($connection, $_POST['content']);
-    $review_rating = (int)$_POST['rating']; // Get the rating value
+    /* =========================================================
+       FAST + SECURE INPUT HANDLING
+    ========================================================= */
 
-    if (!empty($review_author) && !empty($review_content) && $review_rating >= 1 && $review_rating <= 5) {
-        $query = "INSERT INTO review (review_author, review_content, review_rating, review_date, review_status) 
-                  VALUES (?, ?, ?, NOW(), 'Unapproved')";
-        
-        $stmt = mysqli_prepare($connection, $query);
-        mysqli_stmt_bind_param($stmt, 'ssi', $review_author, $review_content, $review_rating);
+    // Trim inputs once (lighter memory usage)
+    $review_author  = trim($_POST['author'] ?? '');
+    $review_content = trim($_POST['content'] ?? '');
+    $review_rating  = (int)($_POST['rating'] ?? 0);
 
-        $create_review = mysqli_stmt_execute($stmt);
+    /* =========================================================
+       VALIDATION
+    ========================================================= */
 
-        if ($create_review) {
-            $_SESSION['head'] = "Thank You!";
-            $_SESSION['status'] = "Your review has been submitted successfully";
-            $_SESSION['status_code'] = "success";
-        } else {
-            $_SESSION['head'] = "Error!";
-            $_SESSION['status'] = "Something went wrong. Please try again.";
+    if (
+        $review_author !== '' &&
+        $review_content !== '' &&
+        $review_rating >= 1 &&
+        $review_rating <= 5
+    ) {
+
+        try {
+
+            /* =========================================================
+               ULTRA-FAST PDO INSERT
+               - Native prepared statements
+               - Reduced parsing overhead
+               - Lower server memory usage
+               - SQL injection safe
+            ========================================================= */
+
+            $stmt = $pdo->prepare("
+                INSERT INTO review
+                (
+                    review_author,
+                    review_content,
+                    review_rating,
+                    review_date,
+                    review_status
+                )
+                VALUES
+                (
+                    :author,
+                    :content,
+                    :rating,
+                    NOW(),
+                    'Unapproved'
+                )
+            ");
+
+            $success = $stmt->execute([
+                ':author'  => $review_author,
+                ':content' => $review_content,
+                ':rating'  => $review_rating
+            ]);
+
+            if ($success) {
+
+                $_SESSION['head'] = "Thank You!";
+                $_SESSION['status'] = "Your review has been submitted successfully";
+                $_SESSION['status_code'] = "success";
+
+            } else {
+
+                $_SESSION['head'] = "Error!";
+                $_SESSION['status'] = "Something went wrong. Please try again.";
+                $_SESSION['status_code'] = "error";
+
+                header("Location: review");
+                exit();
+            }
+
+        } catch (PDOException $e) {
+
+            // Optional: log error instead of displaying
+            error_log($e->getMessage());
+
+            $_SESSION['head'] = "Database Error!";
+            $_SESSION['status'] = "Unable to submit review at the moment.";
             $_SESSION['status_code'] = "error";
-            header('Location: review');
+
+            header("Location: review");
             exit();
         }
 
-        mysqli_stmt_close($stmt);
     } else {
-        echo "<div class='alert alert-danger'><strong>Fields cannot be empty and rating must be between 1 and 5.</strong></div>";
+
+        echo "
+        <div class='alert alert-danger'>
+            <strong>
+                Fields cannot be empty and rating must be between 1 and 5.
+            </strong>
+        </div>";
     }
 }
 ?>

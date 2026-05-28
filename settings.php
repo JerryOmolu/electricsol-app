@@ -1,10 +1,6 @@
+<?php session_start(); ?>
 <?php include "includes/home_header.php"; ?>
-  <!-- Preloader -->
-  <div id="preloader">
-    <div class="spinner-grow text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
+ 
 
   <!-- Internet Connection Status -->
   <div class="internet-connection-status" id="internetStatus"></div>
@@ -175,5 +171,29 @@
 }
 </style>
 
-<!-- Footer Nav -->
-<?php include "includes/home_footer_nav.php"; ?>
+ <!-- All JavaScript Files -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/slideToggle.min.js"></script>
+  <script src="js/internet-status.js"></script>
+  <script src="js/tiny-slider.js"></script>
+  <script src="js/venobox.min.js"></script>
+  <script src="js/countdown.js"></script>
+  <script src="js/rangeslider.min.js"></script>
+  <script src="js/vanilla-dataTables.min.js"></script>
+  <script src="js/index.js"></script>
+  <script src="js/imagesloaded.pkgd.min.js"></script>
+  <script src="js/isotope.pkgd.min.js"></script>
+  <script src="js/dark-rtl.js"></script>
+  <script src="js/active.js"></script>
+  <script src="js/pwa.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
+<script src="js/script.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" 
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

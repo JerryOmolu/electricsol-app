@@ -1,4 +1,3 @@
-<?php session_start(); ?>
 <?php include "includes/header.php"; ?>
 
 <?php
@@ -202,6 +201,12 @@ if (isset($_POST['submit'])) {
 }
 ?>
 
+<!-- Preloader -->
+<div id="preloader">
+    <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
 
 <!-- Internet Connection Status -->
 <div class="internet-connection-status" id="internetStatus"></div>
@@ -214,121 +219,147 @@ if (isset($_POST['submit'])) {
 </div>
 
 <!-- Login Wrapper Area -->
-<div class="login-wrapper d-flex align-items-center justify-content-center min-vh-100"
-     style="background: linear-gradient(135deg, #f5f7fb, #eef2f7); padding: 20px;">
+<div class="login-wrapper d-flex align-items-center justify-content-center min-vh-100 bg-light">
 
-    <div class="custom-container card border-0 shadow-lg rounded-5 p-4 p-md-5 position-relative"
-         style="max-width: 420px; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);">
+    <div class="custom-container card shadow-lg rounded-4 p-4 p-md-5 position-relative"
+         style="max-width: 400px; width: 100%; background-color: #fff;">
 
         <!-- Logo -->
         <div class="text-center mb-4">
             <img
-                class="login-intro-img mb-2"
+                class="login-intro-img"
                 src="img/electrisol-img/login.png"
                 alt="ElectricSol Logo"
-                width="140"
+                width="150"
                 loading="lazy"
                 decoding="async"
             >
 
-            <h4 class="fw-bold mb-1">Welcome Back</h4>
-            <p class="text-muted small mb-0">Sign in to continue</p>
+            <h5 class="mt-3 fw-bold">
+                Sign in to get started
+            </h5>
         </div>
 
         <!-- SESSION STATUS -->
         <?php if (!empty($_SESSION['status'])): ?>
-            <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3 border-0" role="alert">
+
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+
                 <strong>Info:</strong>
-                <?php echo htmlspecialchars($_SESSION['status'], ENT_QUOTES, 'UTF-8'); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+                <?php
+                echo htmlspecialchars($_SESSION['status'], ENT_QUOTES, 'UTF-8');
+                ?>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                </button>
+
             </div>
+
             <?php unset($_SESSION['status']); ?>
+
         <?php endif; ?>
 
         <!-- ERROR MESSAGE -->
         <?php if (!empty($error_message)): ?>
-            <div class="alert alert-danger shadow-sm rounded-3 border-0">
-                <?php echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?>
+
+            <div class="alert alert-danger" role="alert">
+
+                <?php
+                echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8');
+                ?>
+
             </div>
+
         <?php endif; ?>
 
-        <!-- FORM -->
-        <div class="register-form mt-3">
+        <!-- Login Form -->
+        <div class="register-form mt-4">
 
             <form action="" method="post" autocomplete="off">
 
-                <!-- EMAIL -->
+                <!-- Email -->
                 <div class="mb-3">
-                    <label for="email" class="form-label fw-semibold small text-secondary">
+
+                    <label for="email" class="form-label fw-semibold">
                         Email Address
                     </label>
 
-                    <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
-                        <span class="input-group-text bg-white border-0">
-                            <i class="fa fa-envelope text-primary"></i>
+                    <div class="input-group shadow-sm rounded">
+
+                        <span class="input-group-text bg-white">
+                            <i class="fa fa-envelope"></i>
                         </span>
 
                         <input
                             type="email"
-                            class="form-control border-0 shadow-none"
+                            class="form-control border-start-0"
                             id="email"
                             name="email"
-                            placeholder="Enter your email"
+                            placeholder="Enter Email Address"
                             value="<?php echo htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                             required
                         >
+
                     </div>
                 </div>
 
-                <!-- PASSWORD -->
-                <div class="mb-3">
-                    <label for="psw-input" class="form-label fw-semibold small text-secondary">
+                <!-- Password -->
+                <div class="mb-3 position-relative">
+
+                    <label for="psw-input" class="form-label fw-semibold">
                         Password
                     </label>
 
-                    <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden position-relative">
+                    <div class="input-group shadow-sm rounded">
 
-                        <span class="input-group-text bg-white border-0">
-                            <i class="fa fa-lock text-primary"></i>
+                        <span class="input-group-text bg-white">
+                            <i class="fa fa-lock"></i>
                         </span>
 
                         <input
                             type="password"
-                            class="form-control border-0 shadow-none"
+                            class="form-control border-start-0"
                             id="psw-input"
                             name="password"
-                            placeholder="Enter your password"
+                            placeholder="Enter Password"
                             required
                         >
 
-                        <span id="togglePassword"
-                              class="position-absolute top-50 end-0 translate-middle-y me-3"
-                              style="cursor:pointer;">
+                        <span class="position-absolute top-50 end-0 translate-middle-y pe-3 cursor-pointer"
+                              id="togglePassword">
+
                             <i class="bi bi-eye fs-5 text-secondary"></i>
+
                         </span>
 
                     </div>
                 </div>
 
-                <!-- REMEMBER -->
+                <!-- Remember -->
                 <div class="mb-3 form-check">
+
                     <input
                         type="checkbox"
                         class="form-check-input"
                         id="remember"
                         name="remember"
                     >
-                    <label class="form-check-label small" for="remember">
-                        Keep me signed in
+
+                    <label class="form-check-label" for="remember">
+                        Remember Me
                     </label>
+
                 </div>
 
-                <!-- BUTTON -->
+                <!-- Submit -->
                 <button
-                    class="btn btn-primary w-100 fw-bold py-2 rounded-4 shadow-sm btn-hover"
+                    class="btn btn-primary w-100 fw-bold shadow-sm btn-hover"
                     type="submit"
                     name="submit"
-                    style="transition: 0.3s ease;"
                 >
                     Sign In
                 </button>
@@ -336,29 +367,33 @@ if (isset($_POST['submit'])) {
             </form>
         </div>
 
-        <!-- META -->
+        <!-- Login Meta -->
         <div class="login-meta-data text-center mt-4">
 
-            <a class="d-block mb-2 text-decoration-none small"
+            <a class="d-block mb-2 text-decoration-none"
                href="forget-password">
-                Forgot Password?
+
+               Forgot Password?
+
             </a>
 
-            <hr class="my-3">
+            <hr>
 
-            <p class="mb-0 small text-muted">
-                Don’t have an account?
-                <a class="fw-bold text-primary text-decoration-none"
+            <p class="mb-0">
+
+                Don't have an account?
+
+                <a class="fw-bold text-primary"
                    href="register">
-                   Create Account
+
+                   Register Now
+
                 </a>
+
             </p>
-
         </div>
-
     </div>
 </div>
-
 
 <style>
 

@@ -1,211 +1,296 @@
+<?php session_start(); ?>
 <?php include "includes/home_header.php"; ?>
-  <!-- Preloader -->
-  <div id="preloader">
-    <div class="spinner-grow text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
 
-  <!-- Internet Connection Status -->
-  <div class="internet-connection-status" id="internetStatus"></div>
+<?php
+$fullname = $_SESSION['fullname'] ?? '';
+$email    = $_SESSION['email'] ?? '';
+$phone    = $_SESSION['phone'] ?? '';
+$address  = $_SESSION['address'] ?? '';
+$total    = $_GET['total'] ?? 0;
 
-  <!-- HEADER AREA -->
-<!-- Checkout Header -->
+$fullname = htmlspecialchars($fullname, ENT_QUOTES, 'UTF-8');
+$email    = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+$phone    = htmlspecialchars($phone, ENT_QUOTES, 'UTF-8');
+$address  = htmlspecialchars($address, ENT_QUOTES, 'UTF-8');
+$total    = (float)$total;
+?>
+
+
+<div class="internet-connection-status" id="internetStatus"></div>
+
+<!-- HEADER -->
 <div class="header-area shadow-sm bg-white sticky-top" id="headerArea">
   <div class="container">
-    <!-- Header Content -->
-    <div class="header-content header-style-five d-flex align-items-center justify-content-between py-3">
-      
-      <!-- Back Button -->
-      <div class="back-button">
-        <a href="cart" class="btn-back">
-          <i class="bi bi-arrow-left-short"></i>
-        </a>
+    <div class="header-content d-flex align-items-center justify-content-between py-3">
+
+      <a href="cart" class="btn-back">
+        <i class="bi bi-arrow-left-short"></i>
+      </a>
+
+      <div class="page-title d-flex align-items-center gap-2">
+        <img src="img/electrisol-img/checkout.png" width="26">
+        <span>Secure Checkout</span>
       </div>
 
-      <!-- Page Title -->
-      <div class="page-heading text-center flex-grow-1">
-        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center justify-content-center">
-          <img src="img/electrisol-img/checkout.png" width="26px" class="me-2"> Checkout
-        </h6>
+      <div class="navbar--toggler" id="affanNavbarToggler"
+        data-bs-toggle="offcanvas" data-bs-target="#affanOffcanvas">
+        <span></span><span></span><span></span>
       </div>
 
-      <!-- Navbar Toggler -->
-      <div class="navbar--toggler" id="affanNavbarToggler" data-bs-toggle="offcanvas"
-        data-bs-target="#affanOffcanvas" aria-controls="affanOffcanvas">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
     </div>
   </div>
 </div>
 
-
 <?php include "includes/home_side_nav_left.php"; ?>
 
-<!-- PAGE CONTENT -->
+<!-- CONTENT -->
 <div class="page-content-wrapper py-4">
   <div class="container">
-    <!-- Checkout Wrapper -->
-    <div class="checkout-wrapper-area">
-      <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-body checkout-form">
-          <h6 class="mb-3 fw-bold text-dark border-bottom pb-2">Billing Details</h6>
 
-          <?php 
-            if(isset($_SESSION['fullname'])) $fullname = escape($_SESSION['fullname']);
-            if(isset($_SESSION['email'])) $email = escape($_SESSION['email']);
-            if(isset($_SESSION['phone'])) $phone = escape($_SESSION['phone']);
-            if(isset($_SESSION['address'])) $address = escape($_SESSION['address']);
+    <div class="checkout-card">
 
-            if(isset($_GET['total'])) $total = escape($_GET['total']);
-          ?>
-
-          <form id="paymentForm">
-            <div class="form-group mb-3">
-              <label class="fw-semibold">Full Name</label>
-              <input class="form-control rounded-3" type="text" id="fname" value="<?php echo $fullname ?>" readonly />
-            </div>
-
-            <div class="form-group mb-3">
-              <label class="fw-semibold">Email Address</label>
-              <input class="form-control rounded-3" type="email" id="email-address" 
-                     value="<?php echo $email ?>" readonly />
-            </div>
-
-            <div class="form-group mb-3">
-              <label class="fw-semibold">Billing Address</label>
-              <input class="form-control rounded-3" type="text" value="<?php echo $address ?>" readonly />
-            </div>
-
-            <div class="form-group mb-3">
-              <label class="fw-semibold">Total Amount to Pay</label>
-              <input class="form-control rounded-3 fw-bold text-success" type="tel" id="amount" 
-                     value="<?php $total = escape($_GET['total']); echo $total ?>" readonly />
-            </div>
-
-            <div class="text-center my-3">
-              <img src="img/electrisol-img/paystack.png" width="200px" class="img-fluid">
-            </div>
-
-            <div class="form-submit">
-              <button class="btn btn-success w-100 py-2 rounded-3 fw-bold" type="submit" onclick="payWithPaystack()">
-                Pay Now (&#8358;<?php $total = escape($_GET['total']); echo number_format($total, 2); ?>)
-              </button>
-            </div>
-          </form>
-        </div>
+      <div class="checkout-top">
+        <h5>Billing Details</h5>
+        <p>Confirm your information before payment</p>
       </div>
+
+      <form id="paymentForm">
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" id="fname" value="<?= $fullname ?>" readonly>
+          </div>
+
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="email-address" value="<?= $email ?>" readonly>
+          </div>
+
+          <div class="field full">
+            <label>Billing Address</label>
+            <input type="text" value="<?= $address ?>" readonly>
+          </div>
+
+          <div class="field highlight full">
+            <label>Total Amount</label>
+            <input type="tel" id="amount" value="<?= $total ?>" readonly>
+            <small>₦<?= number_format($total, 2) ?></small>
+          </div>
+
+        </div>
+
+        <div class="paystack-box">
+          <img src="img/electrisol-img/paystack.png">
+        </div>
+
+        <button class="pay-btn" type="submit">
+          Pay Securely ₦<?= number_format($total, 2) ?>
+        </button>
+
+      </form>
+
     </div>
+
   </div>
 </div>
 
 <style>
-/* Checkout Page Styles */
-.checkout-form label {
-  font-size: 14px;
-  color: #333;
-}
-.checkout-form input {
-  font-size: 15px;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-}
-.checkout-form input:focus {
-  border-color: #EC8305;
-  box-shadow: 0 0 4px rgba(236,131,5,.3);
-}
-.checkout-form .btn-success {
-  background-color: #28a745;
-  border: none;
-  transition: background .3s ease;
-}
-.checkout-form .btn-success:hover {
-  background-color: #218838;
+
+/* ===== PAGE BACKGROUND ===== */
+body {
+  background: linear-gradient(180deg, #f8f9fb 0%, #ffffff 100%);
 }
 
-	/* Header Area */
+/* ===== HEADER ===== */
 .header-area {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #eee;
+  backdrop-filter: blur(8px);
 }
 
-.header-area .header-content {
-  position: relative;
+.page-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #111;
 }
 
-/* Back Button */
+/* BACK BUTTON */
 .btn-back {
-  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #f8f9fa;
-  color: #333;
-  font-size: 1.4rem;
-  transition: all 0.3s ease;
+  background: #f3f4f6;
+  color: #111;
+  transition: .25s;
+  text-decoration: none;
 }
 .btn-back:hover {
   background: #EC8305;
   color: #fff;
-  text-decoration: none;
 }
 
-/* Page Title */
-.page-heading h6 {
-  font-size: 16px;
-  letter-spacing: 0.3px;
+/* ===== CARD ===== */
+.checkout-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  border: 1px solid #f1f1f1;
 }
 
-/* Navbar Toggler */
+/* TOP SECTION */
+.checkout-top h5 {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.checkout-top p {
+  font-size: 13px;
+  color: #777;
+}
+
+/* ===== FORM GRID ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 15px;
+}
+
+.field.full {
+  grid-column: span 2;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  color: #444;
+}
+
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e6e6e6;
+  font-size: 14px;
+  transition: .25s;
+  background: #fafafa;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #EC8305;
+  box-shadow: 0 0 0 3px rgba(236,131,5,0.15);
+  background: #fff;
+}
+
+/* HIGHLIGHT AMOUNT */
+.highlight input {
+  font-weight: 700;
+  color: #198754;
+}
+
+.highlight small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* PAYSTACK BOX */
+.paystack-box {
+  text-align: center;
+  margin: 20px 0 10px;
+}
+.paystack-box img {
+  width: 160px;
+  opacity: 0.9;
+}
+
+/* PAY BUTTON */
+.pay-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  box-shadow: 0 10px 20px rgba(40,167,69,0.25);
+  transition: .25s;
+}
+
+.pay-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 25px rgba(40,167,69,0.35);
+}
+
+/* HAMBURGER */
 .navbar--toggler {
   width: 30px;
   height: 22px;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  cursor: pointer;
 }
 .navbar--toggler span {
-  display: block;
   height: 3px;
-  background-color: #333;
-  border-radius: 2px;
-  transition: all 0.3s ease;
+  border-radius: 3px;
+  background: #333;
+  transition: .25s;
 }
 .navbar--toggler:hover span {
-  background-color: #EC8305;
+  background: #EC8305;
+}
+
+/* RESPONSIVE */
+@media(max-width: 768px){
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .field.full {
+    grid-column: span 1;
+  }
 }
 
 </style>
 
 <script src="https://js.paystack.co/v1/inline.js"></script>
-<script>
-  const paymentForm = document.getElementById('paymentForm');
-  paymentForm.addEventListener("submit", payWithPaystack, false);
 
-  function payWithPaystack(e) {
-    e.preventDefault();
-    let handler = PaystackPop.setup({
-      key: 'pk_test_a57ecd12cac9e74aa191be0c9210919f92aae107',
-      fname: document.getElementById("fname").value,
-      email: document.getElementById("email-address").value,
-      amount: document.getElementById("amount").value * 100,
-      ref: 'EM'+Math.floor((Math.random() * 1000000000) + 1),
-      onClose: function(){
-        window.location = "https://electricsol.com.ng/cart?transaction-canceled";
-        alert('Transaction Cancelled.');
-      },
-      callback: function(response){
-        let message = 'Payment complete! Reference: ' + response.reference;
-        alert(message);
-        window.location = "https://electricsol.com.ng/verify_transaction?reference=" + response.reference;
-      }
-    });
-    handler.openIframe();
-  }
+<script>
+const paymentForm = document.getElementById('paymentForm');
+
+paymentForm.addEventListener("submit", payWithPaystack);
+
+function payWithPaystack(e){
+  e.preventDefault();
+
+  let handler = PaystackPop.setup({
+    key: 'pk_test_a57ecd12cac9e74aa191be0c9210919f92aae107',
+    email: document.getElementById("email-address").value,
+    amount: document.getElementById("amount").value * 100,
+    ref: 'EM' + Math.floor(Math.random() * 1000000000 + 1),
+
+    onClose: function () {
+      window.location = "https://electricsol.com.ng/cart?transaction-canceled";
+    },
+
+    callback: function (response) {
+      window.location =
+        "http://localhost/electricsol/verify_transaction?reference=" +
+        response.reference;
+    }
+  });
+
+  handler.openIframe();
+}
 </script>
 
 <?php include "includes/home_footer_nav.php"; ?>

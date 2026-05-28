@@ -1,234 +1,759 @@
+<?php session_start(); ?>
 <?php include "includes/header.php"; ?>
-  <!-- Preloader -->
-  <div id="preloader">
-    <div class="spinner-grow text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
 
-  <!-- Internet Connection Status -->
-  <div class="internet-connection-status" id="internetStatus"></div>
+<!-- Internet Connection Status -->
+<div class="internet-connection-status" id="internetStatus"></div>
 
-  <!-- Back Button -->
-  <div class="login-back-button">
-    <a href="index">
-      <i class="bi bi-arrow-left-short"></i>
-    </a>
-  </div>
+<!-- Custom Modern Styling -->
+<style>
+  :root{
+    --primary-color:#0d6efd;
+    --primary-soft:#edf4ff;
+    --border-color:#e9ecef;
+    --text-muted:#6c757d;
+    --shadow-sm:0 10px 30px rgba(0,0,0,.05);
+    --shadow-md:0 15px 40px rgba(13,110,253,.08);
+    --radius-xl:24px;
+    --radius-lg:18px;
+  }
 
-  <!-- Login Wrapper Area -->
-  <div class="login-wrapper d-flex align-items-center justify-content-center">
-    <div class="custom-container">
-      <div class="text-center px-4">
-        <img class="login-intro-img" src="img/electrisol-img/register-2.png" alt="" width="100px">
-      </div>
-    
-<!--Register Code-->
+  body{
+    background:#f5f7fb;
+  }
+
+  .login-back-button a{
+    width:48px;
+    height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:var(--shadow-sm);
+    color:#111;
+    transition:.3s ease;
+  }
+
+  .login-back-button a:hover{
+    transform:translateY(-2px);
+    background:var(--primary-color);
+    color:#fff;
+  }
+
+  .modern-register-card{
+    background:#fff;
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-md);
+    overflow:hidden;
+    border:1px solid rgba(0,0,0,.04);
+  }
+
+  .register-header{
+    position:relative;
+    padding:35px 25px 25px;
+    background:linear-gradient(135deg,#0d6efd 0%,#0b5ed7 50%,#084298 100%);
+    color:#fff;
+    text-align:center;
+    overflow:hidden;
+  }
+
+  .register-header::before{
+    content:"";
+    position:absolute;
+    width:200px;
+    height:200px;
+    background:rgba(255,255,255,.08);
+    border-radius:50%;
+    top:-80px;
+    right:-80px;
+  }
+
+  .register-header::after{
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    background:rgba(255,255,255,.06);
+    border-radius:50%;
+    bottom:-60px;
+    left:-60px;
+  }
+
+  .register-header img{
+    position:relative;
+    z-index:2;
+    width:95px;
+    height:95px;
+    object-fit:contain;
+    background:#fff;
+    padding:12px;
+    border-radius:24px;
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+  }
+
+  .register-header h4{
+    position:relative;
+    z-index:2;
+    margin-top:18px;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+
+  .register-header p{
+    position:relative;
+    z-index:2;
+    margin-bottom:0;
+    opacity:.9;
+    font-size:14px;
+  }
+
+  .register-body{
+    padding:28px 22px 30px;
+  }
+
+  .section-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:22px;
+    font-size:16px;
+    font-weight:700;
+    color:#111827;
+  }
+
+  .section-title .icon-box{
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    background:var(--primary-soft);
+    color:var(--primary-color);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+  }
+
+  .form-label{
+    font-size:13px;
+    margin-bottom:8px;
+    color:#212529;
+    font-weight:600;
+  }
+
+  .form-control,
+  .form-select{
+    border-radius:14px;
+    border:1px solid var(--border-color);
+    min-height:52px;
+    padding:12px 16px;
+    font-size:14px;
+    box-shadow:none !important;
+    transition:.3s ease;
+    background:#fff;
+  }
+
+  .form-control:focus,
+  .form-select:focus{
+    border-color:rgba(13,110,253,.45);
+    box-shadow:0 0 0 4px rgba(13,110,253,.10) !important;
+  }
+
+  .modern-divider{
+    height:1px;
+    background:linear-gradient(to right, transparent, #dfe3eb, transparent);
+    margin:28px 0;
+  }
+
+  .info-note{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:14px;
+    background:#fff8e6;
+    border:1px solid #ffe7a3;
+    border-radius:14px;
+    font-size:13px;
+    color:#856404;
+  }
+
+  .skill-table,
+  .cert-table{
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid #edf0f5;
+    margin-bottom:0;
+  }
+
+  .skill-table tr td,
+  .cert-table tr td{
+    padding:18px 16px;
+    vertical-align:middle;
+    background:#fff;
+    border-color:#edf0f5;
+    font-size:14px;
+    transition:.2s ease;
+  }
+
+  .skill-table tr td:hover,
+  .cert-table tr td:hover{
+    background:#f8fbff;
+  }
+
+  .skill-table input[type="checkbox"],
+  .cert-table input[type="checkbox"]{
+    width:18px;
+    height:18px;
+    margin-right:10px;
+    accent-color:#0d6efd;
+    position:relative;
+    top:3px;
+  }
+
+  .experience-card{
+    padding:18px;
+    border-radius:18px;
+    background:#f8fbff;
+    border:1px solid #e8f0ff;
+  }
+
+  .terms-card{
+    background:#f9fafc;
+    border:1px solid #edf0f5;
+    border-radius:16px;
+    padding:18px;
+  }
+
+  .terms-card a{
+    text-decoration:none;
+    font-weight:600;
+  }
+
+  .btn-register{
+    border:none;
+    border-radius:16px;
+    min-height:56px;
+    font-size:15px;
+    font-weight:700;
+    background:linear-gradient(135deg,#0d6efd,#0b5ed7);
+    box-shadow:0 12px 25px rgba(13,110,253,.25);
+    transition:.3s ease;
+  }
+
+  .btn-register:hover{
+    transform:translateY(-2px);
+    box-shadow:0 16px 35px rgba(13,110,253,.30);
+  }
+
+  .mini-helper{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+
+  @media (max-width:768px){
+
+    .register-header{
+      padding:28px 20px 22px;
+    }
+
+    .register-body{
+      padding:24px 16px 28px;
+    }
+
+    .skill-table tr td,
+    .cert-table tr td{
+      min-width:260px;
+      font-size:13px;
+    }
+
+    .form-control,
+    .form-select{
+      min-height:50px;
+    }
+  }
+</style>
+
+<!-- Back Button -->
+<div class="login-back-button">
+  <a href="index">
+    <i class="bi bi-arrow-left-short"></i>
+  </a>
+</div>
+
+<!-- Login Wrapper Area -->
+<div class="login-wrapper d-flex align-items-center justify-content-center py-4">
+  <div class="custom-container">
+
 <?php
-        
-include 'includes/db.php';
+require_once 'includes/db.php'; // must expose $pdo
 
-		use PHPMailer\PHPMailer\PHPMailer;
-		use PHPMailer\PHPMailer\SMTP;
-		use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-		require 'vendor/autoload.php';
+require 'vendor/autoload.php';
 
-		function sendemail_verify($name,$email,$phone){
-		$mail = new PHPMailer(true);
+/* =========================
+   EMAIL FUNCTION (FIXED)
+========================= */
+function sendemail_verify($name, $email, $phone) {
 
-		$mail = new PHPMailer(true);
+    $mail = new PHPMailer(true);
 
-		$mail->isSMTP(); 
-		$mail->SMTPAuth   = true; 
-		$mail->Host       = 'electricsol.com.ng'; 
-		$mail->Username   = 'info@electricsol.com.ng';     //SMTP username
-		$mail->Password   = '@electric123';
-		$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-		$mail->Port       = 465; 
-		$mail->setFrom('info@electricsol.com.ng', 'Electricsol');
-		$mail->addAddress($email); 
-		$mail->isHTML(true);
-		$mail->Subject = 'Artisan Registration Confirmation from Electricsol';
+    $mail->isSMTP();
+    $mail->SMTPAuth   = true;
+    $mail->Host       = 'electricsol.com.ng';
+    $mail->Username   = 'info@electricsol.com.ng';
+    $mail->Password   = '@electric123';
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+    $mail->Port       = 465;
 
-		$email_template = "
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Welcome Email</title>
-    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet'>
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
-            color: #333;
-            padding: 20px;
-        }
-        .email-container {
-            background-color: #ffffff;
-            max-width: 600px;
-            margin: auto;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            color: #0d6efd;
-            margin-bottom: 20px;
-        }
-        h3 {
-            font-weight: 400;
-            line-height: 1.5;
-        }
-    </style>
-</head>
-<body>
-    <div class='email-container text-center'>
-        <h2>Welcome, $name!</h2>
-        <h3>We're thrilled to have you on board! Get ready to connect with one of the largest client bases in Africa. We're here to support you every step of the way.</h3>
-    </div>
-</body>
-</html>
-";
+    $mail->setFrom('info@electricsol.com.ng', 'Electricsol');
+    $mail->addAddress($email);
 
-            
-		$mail->Body    = $email_template;
-		$mail->send();
-		}        
-        
-        
-        
-	if(isset($_POST['register'])){
-            $name = escape($_POST['name']);
-            $gender = escape($_POST['gender']);
-            $birth = escape($_POST['birth']);
-            $email = escape($_POST['email']);
-            $phone = escape($_POST['phone']);
-            $state = escape($_POST['state']);
-            $lga = escape($_POST['lga']);
-            $address = escape($_POST['address']);
-            $experience = escape($_POST['experience']);
-        
-//        Services
-        $checkbox1 = $_POST['services'];
+    $mail->isHTML(true);
+    $mail->Subject = 'Artisan Registration Confirmation from Electricsol';
 
-        $chk="";  
-        foreach($checkbox1 as $chk1)  
-        {  
-        $chk .= $chk1.",";  
-        }
-        
-//Cerificate
-        $checkbox2 = $_POST['certificate'];
+    $mail->Body = "
+    <div style='font-family:Arial,sans-serif;padding:30px;background:#f4f7fb'>
+        <div style='max-width:600px;margin:auto;background:#fff;border-radius:20px;overflow:hidden'>
+            <div style='background:linear-gradient(135deg,#0d6efd,#084298);padding:30px;text-align:center;color:#fff'>
+                <h2 style='margin:0'>Welcome to Electricsol</h2>
+            </div>
 
-        $check="";  
-        foreach($checkbox2 as $chk2)  
-        {  
-        $check .= $chk2.",";  
-        }
-        
-        $errors = array();
-    
-        $e = "SELECT email FROM artisan WHERE email = '$email' LIMIT 1";
-        $ee = mysqli_query($connection,$e);
-    
-        if(empty($email)){
-            $errors['e'] = "Email Cannot be Empty, Please Enter email address";
-        }else if(mysqli_num_rows($ee) > 0){
+            <div style='padding:30px'>
+                <h3 style='margin-top:0;color:#111'>Hello {$name},</h3>
+
+                <p style='font-size:15px;line-height:1.8;color:#555'>
+                    Your artisan registration was successful.
+                    We're excited to have you join the Electricsol network.
+                </p>
+
+                <div style='margin:25px 0;padding:20px;background:#f8fbff;border-radius:14px'>
+                    <p style='margin:0 0 8px'><strong>Email:</strong> {$email}</p>
+                    <p style='margin:0'><strong>Phone:</strong> {$phone}</p>
+                </div>
+
+                <p style='font-size:14px;color:#666'>
+                    Thank you for choosing Electricsol.
+                </p>
+            </div>
+        </div>
+    </div>";
+
+    $mail->send();
+}
+
+/* =========================
+   REGISTER HANDLER (PDO OPTIMIZED)
+========================= */
+if (isset($_POST['register'])) {
+
+    $name       = trim($_POST['name'] ?? '');
+    $gender     = trim($_POST['gender'] ?? '');
+    $birth      = trim($_POST['birth'] ?? '');
+    $email      = trim($_POST['email'] ?? '');
+    $phone      = trim($_POST['phone'] ?? '');
+    $state      = trim($_POST['state'] ?? '');
+    $lga        = trim($_POST['lga'] ?? '');
+    $address    = trim($_POST['address'] ?? '');
+    $experience = trim($_POST['experience'] ?? '');
+
+    $services = $_POST['services'] ?? [];
+    $certs    = $_POST['certificate'] ?? [];
+
+    $chk   = implode(",", $services);
+    $check = implode(",", $certs);
+
+    $errors = [];
+
+    try {
+
+        // Email check
+        $stmt = $pdo->prepare("SELECT 1 FROM artisan WHERE email = ? LIMIT 1");
+        $stmt->execute([$email]);
+
+        if ($stmt->fetch()) {
             $errors['e'] = "Email Address already exists for another Artisan";
         }
-		
-		
-		$p = "SELECT phone FROM artisan WHERE phone = '$phone' LIMIT 1";
-        $pp = mysqli_query($connection,$p);
-    
-        if(empty($phone)){
-            $errors['p'] = "Phone Number Cannot be Empty, Please Enter a Phone Number";
-        }else if(mysqli_num_rows($pp) > 0){
+
+        // Phone check
+        $stmt = $pdo->prepare("SELECT 1 FROM artisan WHERE phone = ? LIMIT 1");
+        $stmt->execute([$phone]);
+
+        if ($stmt->fetch()) {
             $errors['p'] = "Phone Number already exists for another Artisan.";
-        }	
-        
-        if(count($errors)==0 && !empty ($name) && !empty ($gender) && !empty ($birth) && !empty ($email) && !empty ($phone) && !empty ($state) && !empty ($lga) && !empty ($address) && !empty ($experience) && !empty ($chk) && !empty ($check)){
-            
-           $query = "INSERT INTO artisan (name,gender,date_of_birth,email,phone,state,lga,address,skills,certificate,years,added_on)VALUES('{$name}','{$gender}','{$birth}','{$email}','{$phone}','{$state}','{$lga}','{$address}','{$chk}','{$check}','{$experience}',now())";
-            
-        $register_new_artisan = mysqli_query($connection, $query);
-            
-            if($register_new_artisan){
-                
-                sendemail_verify("$name","$email","$phone");
-                
+        }
+
+        /* =========================
+           VALIDATION
+        ========================= */
+        if (
+            empty($name) || empty($gender) || empty($birth) || empty($email) ||
+            empty($phone) || empty($state) || empty($lga) || empty($address) ||
+            empty($experience) || empty($chk) || empty($check)
+        ) {
+            throw new Exception("All fields are required.");
+        }
+
+        if (count($errors) === 0) {
+
+            $stmt = $pdo->prepare("
+                INSERT INTO artisan
+                (name, gender, date_of_birth, email, phone, state, lga, address, skills, certificate, years, added_on)
+                VALUES
+                (:name, :gender, :birth, :email, :phone, :state, :lga, :address, :skills, :certificate, :years, NOW())
+            ");
+
+            $insert = $stmt->execute([
+                ':name' => $name,
+                ':gender' => $gender,
+                ':birth' => $birth,
+                ':email' => $email,
+                ':phone' => $phone,
+                ':state' => $state,
+                ':lga' => $lga,
+                ':address' => $address,
+                ':skills' => $chk,
+                ':certificate' => $check,
+                ':years' => $experience
+            ]);
+
+            if ($insert) {
+
+                sendemail_verify($name, $email, $phone);
+
                 $_SESSION['head'] = "Thank You!";
                 $_SESSION['status'] = "Your registration as an Artisan with Electricsol is successful.";
                 $_SESSION['status_code'] = "success";
-                }
-                else{
-                $_SESSION['head'] = "Error!";
-                $_SESSION['status'] = "Something Went Wrong";
-                $_SESSION['status_code'] = "error";
-                header('Location:artisan_register.php');
+
+            } else {
+
+                throw new Exception("Insert failed.");
             }
         }
-        
-        
-    }
-    
-                ?>        
-      
-      
-<!--End of Register Code-->
-      <!-- Register Form -->
-      <div class="register-form mt-5 p-4 shadow-sm rounded bg-white">
-    <h5 class="mb-4 text-center fw-bold">Artisan Registration</h5>
-    
-    <div class="divider border-dark mb-4"></div>
 
-    <form action="" method="post" enctype="multipart/form-data">
+    } catch (Exception $e) {
+
+        $_SESSION['head'] = "Error!";
+        $_SESSION['status'] = $e->getMessage();
+        $_SESSION['status_code'] = "error";
+    }
+
+    header("Location: artisan_register.php");
+    exit;
+}
+?>
+
+<div class="modern-register-card">
+
+    <!-- Header -->
+    <div class="register-header">
+        <img src="img/electrisol-img/register-2.png" alt="Register">
+        <h4>Artisan Registration</h4>
+        <p>Join the Electricsol artisan network and grow your opportunities.</p>
+    </div>
+
+    <!-- Body -->
+    <div class="register-body">
+
+        <!-- =========================
+     FORM WIZARD STYLES
+========================= -->
+<style>
+
+.form-step{
+    display:none;
+    animation:fadeSlide .35s ease;
+}
+
+.form-step.active{
+    display:block;
+}
+
+@keyframes fadeSlide{
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.wizard-progress{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:35px;
+    position:relative;
+    gap:10px;
+}
+
+.wizard-progress::before{
+    content:'';
+    position:absolute;
+    top:22px;
+    left:0;
+    width:100%;
+    height:4px;
+    background:#e9ecef;
+    z-index:1;
+}
+
+.progress-line{
+    position:absolute;
+    top:22px;
+    left:0;
+    height:4px;
+    background:linear-gradient(90deg,#0d6efd,#0b5ed7);
+    z-index:2;
+    transition:.4s ease;
+    width:0%;
+}
+
+.wizard-step{
+    position:relative;
+    z-index:3;
+    text-align:center;
+    flex:1;
+}
+
+.wizard-step .step-number{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    background:#fff;
+    border:2px solid #dee2e6;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:auto;
+    font-weight:700;
+    color:#6c757d;
+    transition:.3s ease;
+}
+
+.wizard-step.active .step-number,
+.wizard-step.completed .step-number{
+    background:#0d6efd;
+    border-color:#0d6efd;
+    color:#fff;
+    box-shadow:0 10px 20px rgba(13,110,253,.25);
+}
+
+.wizard-step small{
+    display:block;
+    margin-top:10px;
+    font-size:12px;
+    font-weight:600;
+    color:#6c757d;
+}
+
+.wizard-step.active small,
+.wizard-step.completed small{
+    color:#0d6efd;
+}
+
+.wizard-btns{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    margin-top:35px;
+}
+
+.btn-wizard{
+    min-width:140px;
+    height:52px;
+    border:none;
+    border-radius:14px;
+    font-weight:600;
+    transition:.3s ease;
+}
+
+.btn-prev{
+    background:#eef2f7;
+    color:#111;
+}
+
+.btn-prev:hover{
+    background:#dde5ef;
+}
+
+.btn-next{
+    background:linear-gradient(135deg,#0d6efd,#0b5ed7);
+    color:#fff;
+    box-shadow:0 10px 25px rgba(13,110,253,.2);
+}
+
+.btn-next:hover{
+    transform:translateY(-2px);
+}
+
+@media(max-width:768px){
+
+    .wizard-step small{
+        font-size:10px;
+    }
+
+    .wizard-step .step-number{
+        width:38px;
+        height:38px;
+        font-size:13px;
+    }
+
+    .wizard-progress::before,
+    .progress-line{
+        top:18px;
+    }
+
+    .btn-wizard{
+        min-width:120px;
+        height:48px;
+        font-size:14px;
+    }
+}
+</style>
+
+<!-- =========================
+     FORM WIZARD
+========================= -->
+
+<form action="" method="post" enctype="multipart/form-data" id="artisanWizardForm">
+
+    <!-- Progress -->
+    <div class="wizard-progress">
+
+        <div class="progress-line" id="progressLine"></div>
+
+        <div class="wizard-step active">
+            <div class="step-number">1</div>
+            <small>Personal</small>
+        </div>
+
+        <div class="wizard-step">
+            <div class="step-number">2</div>
+            <small>Skills</small>
+        </div>
+
+        <div class="wizard-step">
+            <div class="step-number">3</div>
+            <small>Certificates</small>
+        </div>
+
+        <div class="wizard-step">
+            <div class="step-number">4</div>
+            <small>Experience</small>
+        </div>
+
+    </div>
+
+    <!-- =========================
+         STEP 1
+    ========================= -->
+    <div class="form-step active">
 
         <!-- Personal Information -->
-        <h6 class="text-center fw-semibold mb-3">Personal Information</h6>
+        <div class="section-title">
+            <div class="icon-box">
+                <i class="bi bi-person"></i>
+            </div>
+            <span>Personal Information</span>
+        </div>
 
         <div class="form-group mb-3">
-            <label for="Fullname" class="form-label fw-bold text-dark">Fullname</label>
-            <input class="form-control" type="text" placeholder="Enter Your Full Name" name="name" value="<?php echo isset($_POST['name']) ? $_POST['name'] : '' ?>" required>
+            <label class="form-label">Fullname</label>
+
+            <input
+                class="form-control"
+                type="text"
+                placeholder="Enter Your Full Name"
+                name="name"
+                value="<?php echo isset($_POST['name']) ? $_POST['name'] : '' ?>"
+                required
+            >
         </div>
 
         <div class="row g-3 mb-3">
+
             <div class="col-md-6">
-                <label for="Gender" class="form-label fw-bold text-dark">Gender</label>
+
+                <label class="form-label">Gender</label>
+
                 <select name='gender' id='gender' class='form-select' required>
                     <option value='' selected>-Select Gender-</option>
                     <option value='Male'>Male</option>
                     <option value='Female'>Female</option>
                 </select>
+
             </div>
+
             <div class="col-md-6">
-                <label for="Date of Birth" class="form-label fw-bold text-dark">Date of Birth</label>
-                <input class="form-control" type="date" name="birth" value="<?php echo isset($_POST['birth']) ? $_POST['birth'] : '' ?>" required>
+
+                <label class="form-label">Date of Birth</label>
+
+                <input
+                    class="form-control"
+                    type="date"
+                    name="birth"
+                    value="<?php echo isset($_POST['birth']) ? $_POST['birth'] : '' ?>"
+                    required
+                >
+
             </div>
+
         </div>
 
         <div class="form-group mb-3">
-            <label for="Email Address" class="form-label fw-bold text-dark">Email Address</label>
-            <input class="form-control" type="email" placeholder="Enter Your Email address" name="email" value="<?php echo isset($_POST['email']) ? $_POST['email'] : '' ?>" required>
-            <small class="text-danger"><?php if(isset($errors['e'])) echo $errors['e']; ?></small>
+
+            <label class="form-label">Email Address</label>
+
+            <input
+                class="form-control"
+                type="email"
+                placeholder="Enter Your Email Address"
+                name="email"
+                value="<?php echo isset($_POST['email']) ? $_POST['email'] : '' ?>"
+                required
+            >
+
+            <small class="text-danger">
+                <?php if(isset($errors['e'])) echo $errors['e']; ?>
+            </small>
+
         </div>
 
         <div class="form-group mb-3">
-            <label for="Phone Number" class="form-label fw-bold text-dark">Phone Number</label>
-            <input class="form-control" type="text" placeholder="Enter Your Phone Number" name="phone" maxlength="11" value="<?php echo isset($_POST['phone']) ? $_POST['phone'] : '' ?>" required>
-            <small class="text-danger"><?php if(isset($errors['p'])) echo $errors['p']; ?></small>
+
+            <label class="form-label">Phone Number</label>
+
+            <input
+                class="form-control"
+                type="text"
+                placeholder="Enter Your Phone Number"
+                name="phone"
+                maxlength="11"
+                value="<?php echo isset($_POST['phone']) ? $_POST['phone'] : '' ?>"
+                required
+            >
+
+            <small class="text-danger">
+                <?php if(isset($errors['p'])) echo $errors['p']; ?>
+            </small>
+
         </div>
 
         <div class="row g-3 mb-3">
+
             <div class="col-md-6">
-                <label for="State of Origin" class="form-label fw-bold text-dark">State of Origin</label>
+
+                <label class="form-label">State of Origin</label>
+
                 <select onchange='toggleLGA(this);' name='state' id='state' class='form-select' required>
+
                     <option value='' selected>-Select State of Origin-</option>
-                    <!-- States list -->
+
                     <option value='Abia'>Abia</option>
                     <option value='Adamawa'>Adamawa</option>
                     <option value='AkwaIbom'>AkwaIbom</option>
@@ -266,108 +791,399 @@ include 'includes/db.php';
                     <option value='Taraba'>Taraba</option>
                     <option value='Yobe'>Yobe</option>
                     <option value='Zamfara'>Zamfara</option>
+
                 </select>
+
             </div>
+
             <div class="col-md-6">
-                <label for="LGA" class="form-label fw-bold text-dark">LGA</label>
+
+                <label class="form-label">LGA</label>
+
                 <select name='lga' id='lga' class='form-select select-lga' required></select>
+
+            </div>
+
+        </div>
+
+        <div class="form-group mb-3">
+
+            <label class="form-label">Precise Location</label>
+
+            <input
+                class="form-control"
+                type="text"
+                placeholder="Enter Your Contact Address"
+                name="address"
+                value="<?php echo isset($_POST['address']) ? $_POST['address'] : '' ?>"
+                required
+            >
+
+        </div>
+
+        <div class="info-note mb-3">
+            <i class="bi bi-geo-alt-fill"></i>
+
+            <div>
+                Ensure you enter your precise location for easier discovery by clients nearby.
             </div>
         </div>
 
-        <div class="form-group mb-4">
-            <label for="Contact Address" class="form-label fw-bold text-dark">Precise Location</label>
-            <input class="form-control" type="text" placeholder="Enter Your Contact Address" name="address" value="<?php echo isset($_POST['address']) ? $_POST['address'] : '' ?>" required>
-            <small class="text-danger">**Ensure you enter your precise location for easy search**</small>
+        <div class="wizard-btns">
+            <div></div>
+
+            <button type="button" class="btn btn-wizard btn-next nextBtn">
+                Continue
+                <i class="bi bi-arrow-right ms-2"></i>
+            </button>
         </div>
 
-        <div class="divider border-dark mb-4"></div>
+    </div>
 
-        <!-- Skills & Expertise -->
-        <h6 class="text-center fw-semibold mb-3">Skills and Expertise</h6>
+    <!-- =========================
+         STEP 2
+    ========================= -->
+    <div class="form-step">
+
+        <div class="section-title">
+            <div class="icon-box">
+                <i class="bi bi-tools"></i>
+            </div>
+            <span>Skills & Expertise</span>
+        </div>
+
         <div class="table-responsive mb-4">
-            <table class="table table-bordered table-hover table-striped">
+
+            <table class="table skill-table align-middle">
+
                 <tr>
-                    <td><input type="checkbox" name="services[]" value="Electrical Appliances Installation" /> Electrical Appliances Installation</td>
-                    <td><input type="checkbox" name="services[]" value="Solar Panel Installation and Maintenance" /> Solar Panel Installation and Maintenance</td>
+                    <td>
+                        <input type="checkbox" name="services[]" value="Electrical Appliances Installation" />
+                        Electrical Appliances Installation
+                    </td>
+
+                    <td>
+                        <input type="checkbox" name="services[]" value="Solar Panel Installation and Maintenance" />
+                        Solar Panel Installation and Maintenance
+                    </td>
                 </tr>
+
                 <tr>
-                    <td><input type="checkbox" name="services[]" value="Circuit breaker installation and maintenance" /> Circuit breaker installation</td>
-                    <td><input type="checkbox" name="services[]" value="Electrical panel upgrades" /> Electrical panel upgrades</td>
+                    <td>
+                        <input type="checkbox" name="services[]" value="Circuit breaker installation and maintenance" />
+                        Circuit breaker installation
+                    </td>
+
+                    <td>
+                        <input type="checkbox" name="services[]" value="Electrical panel upgrades" />
+                        Electrical panel upgrades
+                    </td>
                 </tr>
+
                 <tr>
-                    <td><input type="checkbox" name="services[]" value="Industrial electrical maintenance" /> Industrial electrical maintenance</td>
-                    <td><input type="checkbox" name="services[]" value="Reading and interpreting blueprints & schematics" /> Reading and interpreting blueprints & schematics</td>
+                    <td>
+                        <input type="checkbox" name="services[]" value="Industrial electrical maintenance" />
+                        Industrial electrical maintenance
+                    </td>
+
+                    <td>
+                        <input type="checkbox" name="services[]" value="Reading and interpreting blueprints & schematics" />
+                        Reading and interpreting blueprints & schematics
+                    </td>
                 </tr>
+
                 <tr>
-                    <td><input type="checkbox" name="services[]" value="Electrical wiring and installations" /> Electrical wiring and installations</td>
-                    <td><input type="checkbox" name="services[]" value="Electrical troubleshooting and repairs" /> Electrical troubleshooting and repairs</td>
+                    <td>
+                        <input type="checkbox" name="services[]" value="Electrical wiring and installations" />
+                        Electrical wiring and installations
+                    </td>
+
+                    <td>
+                        <input type="checkbox" name="services[]" value="Electrical troubleshooting and repairs" />
+                        Electrical troubleshooting and repairs
+                    </td>
                 </tr>
+
             </table>
+
         </div>
 
-        <div class="divider border-dark mb-4"></div>
+        <div class="wizard-btns">
 
-        <!-- Certifications -->
-        <h6 class="text-center fw-semibold mb-3">Certifications and Training</h6>
+            <button type="button" class="btn btn-wizard btn-prev prevBtn">
+                <i class="bi bi-arrow-left me-2"></i>
+                Previous
+            </button>
+
+            <button type="button" class="btn btn-wizard btn-next nextBtn">
+                Continue
+                <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+         STEP 3
+    ========================= -->
+    <div class="form-step">
+
+        <div class="section-title">
+            <div class="icon-box">
+                <i class="bi bi-patch-check"></i>
+            </div>
+            <span>Certifications & Training</span>
+        </div>
+
         <div class="table-responsive mb-4">
-            <table class="table table-bordered table-hover table-striped">
+
+            <table class="table cert-table align-middle">
+
                 <tr>
-                    <td><input type="checkbox" name="certificate[]" value="Electrical Technician Certificate" /> Electrical Technician Certificate</td>
-                    <td><input type="checkbox" name="certificate[]" value="Licensed Electrician" /> Licensed Electrician (If Applicable)</td>
+                    <td>
+                        <input type="checkbox" name="certificate[]" value="Electrical Technician Certificate" />
+                        Electrical Technician Certificate
+                    </td>
+
+                    <td>
+                        <input type="checkbox" name="certificate[]" value="Licensed Electrician" />
+                        Licensed Electrician (If Applicable)
+                    </td>
                 </tr>
+
                 <tr>
-                    <td><input type="checkbox" name="certificate[]" value="Occupational Safety and Health Administration (OSHA) Certification" /> OSHA Certification</td>
-                    <td><input type="checkbox" name="certificate[]" value="Solar Installation Training Certification" /> Solar Installation Training Certification</td>
+                    <td>
+                        <input type="checkbox" name="certificate[]" value="Occupational Safety and Health Administration (OSHA) Certification" />
+                        OSHA Certification
+                    </td>
+
+                    <td>
+                        <input type="checkbox" name="certificate[]" value="Solar Installation Training Certification" />
+                        Solar Installation Training Certification
+                    </td>
                 </tr>
+
                 <tr>
-                    <td><input type="checkbox" name="certificate[]" value="Apprenticeship Training Programs" /> Apprenticeship Training Programs</td>
-                    <td><input type="checkbox" name="certificate[]" value="First Aid/CPR Certification" /> First Aid/CPR Certification</td>
+                    <td>
+                        <input type="checkbox" name="certificate[]" value="Apprenticeship Training Programs" />
+                        Apprenticeship Training Programs
+                    </td>
+
+                    <td>
+                        <input type="checkbox" name="certificate[]" value="First Aid/CPR Certification" />
+                        First Aid/CPR Certification
+                    </td>
                 </tr>
+
                 <tr>
-                    <td><input type="checkbox" name="certificate[]" value="COREN" /> COREN</td>
-                    <td><input type="checkbox" name="certificate[]" value="NEMSA" /> NEMSA</td>
+                    <td>
+                        <input type="checkbox" name="certificate[]" value="COREN" />
+                        COREN
+                    </td>
+
+                    <td>
+                        <input type="checkbox" name="certificate[]" value="NEMSA" />
+                        NEMSA
+                    </td>
                 </tr>
+
             </table>
+
         </div>
 
-        <div class="divider border-dark mb-4"></div>
+        <div class="wizard-btns">
 
-        <!-- Working Experience -->
-        <h6 class="text-center fw-semibold mb-3">Working Experience</h6>
-        <div class="form-group mb-4">
-            <label for="experience" class="form-label fw-bold text-dark">Work Experience</label>
+            <button type="button" class="btn btn-wizard btn-prev prevBtn">
+                <i class="bi bi-arrow-left me-2"></i>
+                Previous
+            </button>
+
+            <button type="button" class="btn btn-wizard btn-next nextBtn">
+                Continue
+                <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+         STEP 4
+    ========================= -->
+    <div class="form-step">
+
+        <div class="section-title">
+            <div class="icon-box">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <span>Working Experience</span>
+        </div>
+
+        <div class="experience-card mb-4">
+
+            <label class="form-label">Work Experience</label>
+
             <select name='experience' id='experience' class='form-select' required>
+
                 <option value='' selected>-Select Years of Experience-</option>
                 <option value='Less Than 5 Yrs'>Less Than 5 Yrs</option>
                 <option value='5 Years'>5 Years</option>
                 <option value='5-10 Years'>5-10 Years</option>
                 <option value='More than 10 Years'>More than 10 Years</option>
+
             </select>
+
+            <div class="mini-helper">
+                Select the option that best describes your professional experience.
+            </div>
+
         </div>
 
-        <div class="divider border-dark mb-4"></div>
+        <!-- Terms -->
+        <div class="terms-card mb-4">
 
-        <!-- Privacy Policy -->
-        <div class="form-check mb-4">
-            <input class="form-check-input" id="checkedCheckbox" type="checkbox" required>
-            <label class="form-check-label text-dark" for="checkedCheckbox">
-                I agree with the <a href="terms">Terms & Conditions</a> and 
-                <a href="privacy-policy">Privacy Policy</a>
-            </label>
+            <div class="form-check m-0">
+
+                <input class="form-check-input" id="checkedCheckbox" type="checkbox" required>
+
+                <label class="form-check-label text-dark" for="checkedCheckbox">
+
+                    I agree with the
+                    <a href="terms">Terms & Conditions</a>
+                    and
+                    <a href="privacy-policy">Privacy Policy</a>
+
+                </label>
+
+            </div>
+
         </div>
 
-        <button class="btn btn-primary w-100 py-2 fw-bold" type="submit" name="register">Register</button>
+        <div class="wizard-btns">
 
-    </form>
-</div>
+            <button type="button" class="btn btn-wizard btn-prev prevBtn">
+                <i class="bi bi-arrow-left me-2"></i>
+                Previous
+            </button>
 
+            <!-- Submit -->
+            <button class="btn btn-primary btn-register" type="submit" name="register">
+                <i class="bi bi-person-plus-fill me-2"></i>
+                Register as Artisan
+            </button>
+
+        </div>
 
     </div>
+
+</form>
+
+<!-- =========================
+     FORM WIZARD SCRIPT
+========================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const steps = document.querySelectorAll(".form-step");
+    const nextBtns = document.querySelectorAll(".nextBtn");
+    const prevBtns = document.querySelectorAll(".prevBtn");
+    const wizardSteps = document.querySelectorAll(".wizard-step");
+    const progressLine = document.getElementById("progressLine");
+
+    let currentStep = 0;
+
+    function updateWizard() {
+
+        steps.forEach((step, index) => {
+            step.classList.toggle("active", index === currentStep);
+        });
+
+        wizardSteps.forEach((step, index) => {
+
+            step.classList.remove("active", "completed");
+
+            if(index < currentStep){
+                step.classList.add("completed");
+            } 
+            else if(index === currentStep){
+                step.classList.add("active");
+            }
+        });
+
+        const progressWidth = ((currentStep) / (steps.length - 1)) * 100;
+        progressLine.style.width = progressWidth + "%";
+    }
+
+    nextBtns.forEach(btn => {
+
+        btn.addEventListener("click", function () {
+
+            const currentFormStep = steps[currentStep];
+            const requiredFields = currentFormStep.querySelectorAll("[required]");
+
+            let valid = true;
+
+            requiredFields.forEach(field => {
+
+                if (!field.checkValidity()) {
+
+                    field.reportValidity();
+                    valid = false;
+                }
+
+            });
+
+            if(valid && currentStep < steps.length - 1){
+
+                currentStep++;
+                updateWizard();
+
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+            }
+
+        });
+
+    });
+
+    prevBtns.forEach(btn => {
+
+        btn.addEventListener("click", function () {
+
+            if(currentStep > 0){
+
+                currentStep--;
+                updateWizard();
+
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+            }
+
+        });
+
+    });
+
+});
+</script>
+
+    </div>
+</div>
+
   </div>
+</div>
 
-  <!-- All JavaScript Files -->
+<?php if (isset($_SESSION['status'])): ?>
 
-<!--Sweet Alert  -->
+  <!--Sweet Alert  -->
 <script src="js/sweetalert.js"></script>
 <?php 
 if(isset($_SESSION['status']) && $_SESSION['status'] != '')
@@ -380,7 +1196,7 @@ if(isset($_SESSION['status']) && $_SESSION['status'] != '')
 			text: "<?php echo $_SESSION['status']; ?>",
 			button: "OK",
 		}).then(function() {
-			window.location = "artisan_register.php";
+			window.location = "home";
 			});
 	</script>
 	<?php
@@ -388,17 +1204,16 @@ if(isset($_SESSION['status']) && $_SESSION['status'] != '')
 }
 ?>
 
-    <script src="js/lga.js"></script>
-    <script src="js/lga.min.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/internet-status.js"></script>
-    <script src="js/dark-rtl.js"></script>
-    <script src="js/pswmeter.js"></script>
-    <script src="js/active.js"></script>
-    <script src="js/pwa.js"></script>
-  
-  
-  
-</body>
+<?php unset($_SESSION['status']); endif; ?>
 
+<script src="js/lga.js"></script>
+<script src="js/lga.min.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/internet-status.js"></script>
+<script src="js/dark-rtl.js"></script>
+<script src="js/pswmeter.js"></script>
+<script src="js/active.js"></script>
+<script src="js/pwa.js"></script>
+
+</body>
 </html>

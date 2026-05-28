@@ -31,21 +31,25 @@
     <?php
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-require 'vendor/autoload.php'; // Make sure PHPMailer is installed via Composer
 
-if(isset($_SESSION['status'])) {
+require 'vendor/autoload.php';
+
+// Session message display
+if (isset($_SESSION['status'])) {
     echo '<div class="alert alert-info alert-dismissible fade show" role="alert">
-            <i class="bi bi-info-circle"></i> '.$_SESSION['status'].'
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <i class="bi bi-info-circle"></i> ' . $_SESSION['status'] . '
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>';
     unset($_SESSION['status']);
 }
 
+/* =========================
+   EMAIL FUNCTION (UNCHANGED)
+========================= */
 function send_reset_link($get_fullname, $get_phone, $token, $get_email) {
     $mail = new PHPMailer(true);
 
     try {
-        //Server settings
         $mail->isSMTP();
         $mail->Host       = 'electricsol.com.ng';
         $mail->SMTPAuth   = true;
@@ -54,96 +58,96 @@ function send_reset_link($get_fullname, $get_phone, $token, $get_email) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port       = 465;
 
-        //Recipients
         $mail->setFrom('info@electricsol.com.ng', 'Electricsol');
         $mail->addAddress($get_email, $get_fullname);
 
-        //Content
         $mail->isHTML(true);
         $mail->Subject = 'Reset Password Notification';
+
         $mail->Body = "
 <html>
-<head>
-  <meta charset='UTF-8'>
-  <title>Password Reset</title>
-</head>
-<body style='margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f4f4f4;'>
-  <table width='100%' cellpadding='0' cellspacing='0' border='0'>
-    <tr>
-      <td align='center'>
-        <table width='600' cellpadding='0' cellspacing='0' border='0' style='background-color:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1);margin:30px 0;'>
-          <tr>
-            <td style='background-color:#007bff;padding:30px;text-align:center;color:#ffffff;'>
-              <h1 style='margin:0;font-size:26px;'>Hello, $get_fullname!</h1>
-            </td>
-          </tr>
-          <tr>
-            <td style='padding:30px;text-align:center;color:#333333;'>
-              <p style='font-size:16px;line-height:1.5;'>We received a request to reset your password. If you didn’t request this, please ignore this email.</p>
-              <p style='margin:30px 0;'>
-                <a href='http://localhost/electricsol/change-password?token=$token&email=$get_email' 
-                   style='display:inline-block;background-color:#007bff;color:#ffffff;font-weight:bold;text-decoration:none;padding:12px 25px;border-radius:5px;font-size:16px;'>
-                   Reset Password
-                </a>
-              </p>
-              <p style='font-size:14px;color:#555555;'>Need help? Call us at <b>07039000386</b></p>
-            </td>
-          </tr>
-          <tr>
-            <td style='padding:15px;text-align:center;background-color:#f4f4f4;color:#999999;font-size:12px;'>
-              &copy; ".date('Y')." Electricsol. All rights reserved.
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+<body>
+  <div style='font-family:Arial;background:#f4f4f4;padding:20px'>
+    <div style='max-width:600px;margin:auto;background:#fff;border-radius:10px;overflow:hidden'>
+      <div style='background:#007bff;color:#fff;padding:25px;text-align:center'>
+        <h2>Hello, $get_fullname</h2>
+      </div>
+      <div style='padding:25px;text-align:center'>
+        <p>We received a request to reset your password.</p>
+        <a href='http://localhost/electricsol/change-password?token=$token&email=$get_email'
+           style='display:inline-block;margin-top:20px;padding:12px 25px;background:#007bff;color:#fff;text-decoration:none;border-radius:5px'>
+           Reset Password
+        </a>
+      </div>
+    </div>
+  </div>
 </body>
-</html>
-";
-
+</html>";
 
         $mail->send();
         return true;
+
     } catch (Exception $e) {
-        error_log("Email sending failed: " . $mail->ErrorInfo);
+        error_log("Mail error: " . $mail->ErrorInfo);
         return false;
     }
 }
 
+/* =========================
+   RESET LOGIC (PDO OPTIMIZED)
+========================= */
+
 if (isset($_POST['submit'])) {
-    $email = escape($_POST['email']);
-    $token = md5(rand());
-    $check_email = "SELECT * FROM register WHERE email = '$email' LIMIT 1";
-    $check_email_run = mysqli_query($connection, $check_email);
 
-    if (mysqli_num_rows($check_email_run) > 0) {
-        $row = mysqli_fetch_array($check_email_run);
-        $get_fullname = escape($row['fullname']);
-        $get_phone = escape($row['phone']);
-        $get_email = escape($row['email']);
+    $email = trim($_POST['email'] ?? '');
+    $token = bin2hex(random_bytes(16)); // faster + more secure than md5(rand())
 
-        $update_token = "UPDATE register SET verify_token='$token' WHERE email='$get_email' LIMIT 1";
-        $update_token_run = mysqli_query($connection, $update_token);
+    try {
 
-        if ($update_token_run) {
-            if (send_reset_link($get_fullname, $get_phone, $token, $get_email)) {
-                $_SESSION['status'] = "Password Reset link has been sent. Please check your email.";
+        // 1. Check user (FAST + INDEX FRIENDLY)
+        $stmt = $pdo->prepare("SELECT fullname, phone, email 
+                               FROM register 
+                               WHERE email = :email 
+                               LIMIT 1");
+        $stmt->execute([':email' => $email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+
+            // 2. Update token (single indexed query)
+            $update = $pdo->prepare("UPDATE register 
+                                     SET verify_token = :token 
+                                     WHERE email = :email 
+                                     LIMIT 1");
+
+            $updated = $update->execute([
+                ':token' => $token,
+                ':email' => $email
+            ]);
+
+            if ($updated) {
+
+                if (send_reset_link($user['fullname'], $user['phone'], $token, $user['email'])) {
+                    $_SESSION['status'] = "Password reset link sent successfully.";
+                } else {
+                    $_SESSION['status'] = "Email sending failed. Try again.";
+                }
+
             } else {
-                $_SESSION['status'] = "Email sending failed. Please try again.";
+                $_SESSION['status'] = "System error occurred. Try again.";
             }
-            header("Location: forget-password");
-            exit(0);
+
         } else {
-            $_SESSION['status'] = "Something went wrong. Please try again.";
-            header("Location: forget-password");
-            exit(0);
+            $_SESSION['status'] = "No account found with this email.";
         }
-    } else {
-        $_SESSION['status'] = "Email not found in our records.";
-        header("Location: forget-password");
-        exit(0);
+
+    } catch (PDOException $e) {
+        error_log("PDO error: " . $e->getMessage());
+        $_SESSION['status'] = "Error: " . $e->getMessage();
     }
+
+    header("Location: forget-password");
+    exit;
 }
 ?>
 

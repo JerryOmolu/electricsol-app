@@ -38,63 +38,101 @@
     <!-- Register Form -->
     <div class="register-form mt-4 card shadow-sm border-0">
       <div class="card-body">
-        <?php
-        include 'includes/db.php';
 
-        if(isset($_POST['update_password'])){
-          $email = escape($_POST['email']);
-          $new_password = escape($_POST['new_password']);
-          $confirm_password = escape($_POST['confirm_password']);
-          $token = escape($_GET['token']);
+<?php
+include 'includes/db.php'; 
+// expects $pdo = new PDO(...)
 
-          if(!empty($token)){
-            if(!empty($email) && !empty($new_password) && !empty($confirm_password)){
-              // check token
-              $check_token = "SELECT verify_token FROM register WHERE verify_token='$token' LIMIT 1";
-              $check_token_run = mysqli_query($connection, $check_token);
+if(isset($_POST['update_password'])){
 
-              if(mysqli_num_rows($check_token_run) > 0){
-                if($new_password == $confirm_password){
-                  $hashedPassword = password_hash($new_password, PASSWORD_BCRYPT, ['cost' => 10]);
+    $email = $_POST['email'] ?? '';
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+    $token = $_GET['token'] ?? '';
 
-                  $update_password = "UPDATE register SET password='$hashedPassword' WHERE verify_token='$token' LIMIT 1";
-                  $update_password_run = mysqli_query($connection, $update_password);
+    if(!empty($token)){
 
-                  if($update_password_run){
-                    $new_token = md5(rand())."electricsol";
-                    $update_to_new_token = "UPDATE register SET verify_token='$new_token' WHERE verify_token='$token' LIMIT 1";
-                    mysqli_query($connection, $update_to_new_token);
+        if(!empty($email) && !empty($new_password) && !empty($confirm_password)){
 
-                    $_SESSION['status'] = "Password reset successful!";
-                    header("Location: login");
-                    exit(0);
-                  } else {
-                    $_SESSION['status'] = "Update failed. Try again.";
-                    header("Location: change-password?token=$token&email=$email");
-                    exit(0);
-                  }
+            try {
+                // 1. CHECK TOKEN (FAST PREPARED QUERY)
+                $stmt = $pdo->prepare("SELECT id, verify_token FROM register WHERE verify_token = :token LIMIT 1");
+                $stmt->execute([':token' => $token]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if($user){
+
+                    if($new_password === $confirm_password){
+
+                        $hashedPassword = password_hash($new_password, PASSWORD_BCRYPT, ['cost' => 10]);
+                        $new_token = md5(rand() . time()) . "electricsol";
+
+                        // 2. TRANSACTION FOR SPEED + CONSISTENCY
+                        $pdo->beginTransaction();
+
+                        // UPDATE PASSWORD
+                        $stmt1 = $pdo->prepare("
+                            UPDATE register 
+                            SET password = :password 
+                            WHERE verify_token = :token
+                        ");
+                        $stmt1->execute([
+                            ':password' => $hashedPassword,
+                            ':token' => $token
+                        ]);
+
+                        // ROTATE TOKEN
+                        $stmt2 = $pdo->prepare("
+                            UPDATE register 
+                            SET verify_token = :new_token 
+                            WHERE verify_token = :token
+                        ");
+                        $stmt2->execute([
+                            ':new_token' => $new_token,
+                            ':token' => $token
+                        ]);
+
+                        $pdo->commit();
+
+                        $_SESSION['status'] = "Password reset successful!";
+                        header("Location: login");
+                        exit;
+
+                    } else {
+                        $_SESSION['status'] = "Passwords do not match.";
+                        header("Location: change-password?token=$token&email=$email");
+                        exit;
+                    }
+
                 } else {
-                  $_SESSION['status'] = "Passwords do not match.";
-                  header("Location: change-password?token=$token&email=$email");
-                  exit(0);
+                    $_SESSION['status'] = "Invalid token.";
+                    header("Location: change-password");
+                    exit;
                 }
-              } else {
-                $_SESSION['status'] = "Invalid token.";
-                header("Location: change-password");
-                exit(0);
-              }
-            } else {
-              $_SESSION['status'] = "All fields are required.";
-              header("Location: change-password?token=$token&email=$email");
-              exit(0);
+
+            } catch(Exception $e){
+                if($pdo->inTransaction()){
+                    $pdo->rollBack();
+                }
+
+                $_SESSION['status'] = "System error. Try again.";
+                header("Location: change-password?token=$token&email=$email");
+                exit;
             }
-          } else {
-            $_SESSION['status'] = "No token available.";
-            header("Location: change-password");
-            exit(0);
-          }
+
+        } else {
+            $_SESSION['status'] = "All fields are required.";
+            header("Location: change-password?token=$token&email=$email");
+            exit;
         }
-        ?>
+
+    } else {
+        $_SESSION['status'] = "No token available.";
+        header("Location: change-password");
+        exit;
+    }
+}
+?>
 
         <!-- Form -->
         <form action="" method="post">
@@ -128,6 +166,7 @@
           <!-- Submit Button -->
           <button class="btn btn-primary w-100" type="submit" name="update_password">Update Password</button>
         </form>
+
       </div>
     </div>
   </div>
@@ -142,14 +181,15 @@
 <script src="js/pwa.js"></script>
 
 <script>
-  // Toggle password visibility
   const toggleNewPassword = document.querySelector("#toggleNewPassword");
   const newPasswordInput = document.querySelector("#new_password");
+
   toggleNewPassword.addEventListener("click", function () {
     const type = newPasswordInput.getAttribute("type") === "password" ? "text" : "password";
     newPasswordInput.setAttribute("type", type);
     this.classList.toggle("bi-eye-slash");
   });
 </script>
+
 </body>
 </html>

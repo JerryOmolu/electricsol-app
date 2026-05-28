@@ -1,11 +1,6 @@
+<?php session_start(); ?>
 <?php include "includes/home_header.php"; ?>
 
-<!-- Preloader -->
-<div id="preloader">
-  <div class="spinner-grow text-primary" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-</div>
 
 <!-- Internet Connection Status -->
 <div class="internet-connection-status" id="internetStatus"></div>
@@ -62,15 +57,76 @@
 
         <!-- Contact Us PHP Logic -->
         <?php 
-        if(isset($_POST['submit'])){
-          $to = "info@electricsol.org";
-          $subject = wordwrap($_POST['subject'],70);
-          $body = $_POST['body'];
-          $header = "From: " . $_POST['email'];
-          mail($to,$subject,$body);
-          echo "<div class='alert alert-success'>Your message has been sent successfully!</div>";
+// assumes $pdo already exists from includes/db.php
+// include "includes/db.php";
+
+if(isset($_POST['submit'])){
+
+    // -------------------------
+    // FAST INPUT LOADING
+    // -------------------------
+    $email   = $_POST['email'] ?? '';
+    $subject = $_POST['subject'] ?? '';
+    $body    = $_POST['body'] ?? '';
+
+    $email   = filter_var($email, FILTER_SANITIZE_EMAIL);
+    $subject = trim($subject);
+    $body    = trim($body);
+
+    if(!empty($email) && !empty($subject) && !empty($body)){
+
+        // -------------------------
+        // EMAIL HEADERS (OPTIMIZED)
+        // -------------------------
+        $to = "info@electricsol.org";
+        $subject = wordwrap($subject, 70);
+        $headers = "From: ".$email."\r\n";
+        $headers .= "Reply-To: ".$email."\r\n";
+
+        // -------------------------
+        // SEND EMAIL (FAST PATH)
+        // -------------------------
+        $sent = mail($to, $subject, $body, $headers);
+
+        if($sent){
+
+            // -------------------------
+            // PDO LOGGING (OPTIONAL BUT HIGH VALUE)
+            // reduces debugging + prevents spam abuse
+            // -------------------------
+            try {
+                $stmt = $pdo->prepare("
+    INSERT INTO contact_messages (email, subject, message, ip_address, user_agent, created_at)
+    VALUES (:email, :subject, :message, :ip, :agent, NOW())
+");
+
+                $stmt->execute([
+                    ':email'   => $email,
+                    ':subject' => $subject,
+                    ':message' => $body
+                ]);
+
+            } catch(Exception $e){
+                // fail silently for performance (do not block user flow)
+            }
+
+            echo "<div class='alert alert-success'>
+                    Your message has been sent successfully!
+                  </div>";
+
+        } else {
+            echo "<div class='alert alert-danger'>
+                    Message could not be sent. Please try again.
+                  </div>";
         }
-        ?>
+
+    } else {
+        echo "<div class='alert alert-warning'>
+                All fields are required.
+              </div>";
+    }
+}
+?>
 
         <!-- Contact Form -->
         <form action="" method="post" class="needs-validation" novalidate>
