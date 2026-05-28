@@ -1,151 +1,198 @@
 <?php include "includes/admin_header.php"; ?>
+<?php require_once "includes/db.php"; // MUST expose $pdo ?>
 
 <div class="container-scroller">
-<!-- partial:partials/_navbar.html -->
+
 <?php include "includes/top_nav.php"; ?>   
-<!-- partial -->
+
 <div class="container-fluid page-body-wrapper">
-      
-<!-- partial -->
-<!-- partial:partials/_sidebar.html -->
+
 <?php include "includes/sidenav.php"; ?>      
 
-<!-- partial -->
 <div class="main-panel">
 <div class="content-wrapper">
-<!--Welcome-->
+
 <?php include "includes/welcome.php"; ?> 
 <hr>
-          
-<!--    Sales-->
-    <div class="row">
-            <div class="col-md-12 grid-margin stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title mb-0">SALES REPORT (SUCCESSFUL TRANSACTIONS)</p><hr>
-        <div class="row">
-        <div class="card">
-        <div class="card-body">
-        <form class="form-inline" method="get" action="">
-        <label for="From">From:&nbsp;&nbsp;</label>
-        <input type="date" class="form-control mb-2 mr-sm-2" id="inlineFormInputName2" name="from" required>
-        <label for="From">To:&nbsp;&nbsp;</label>
-        <input type="date" class="form-control mb-2 mr-sm-2" id="inlineFormInputName2" name="to" required>
-        <button type="submit" class="btn btn-dark mb-2" name="submit">Display Report</button>
-        </form>
-        </div>
-        </div>
-        </div>             
-    <?php 
-                  
-    if(isset($_GET['submit'])){
-		$from = escape($_GET['from']);
-		$to = escape($_GET['to']);
-		
-    if(!empty ($from) && !empty ($to)){
-		
-			$perpage = 20;
-			if(isset($_GET['page'])){
-				$page = escape($_GET['page']);
-			}else{
-				$page = "";
-			}
-			if($page == "" || $page == 1){
-				$page_1 = 0;
-			}else{
-				$page_1 = ($page * $perpage)-$perpage;
-			}
 
-      $qry= "SELECT amount FROM cart";
-        $amount_query = mysqli_query($connection, $qry);
-        $number_of_amount = mysqli_num_rows($amount_query);
+<div class="row">
+<div class="col-md-12 grid-margin stretch-card">
+<div class="card">
+<div class="card-body">
 
-			$query1 = "SELECT * FROM cart WHERE payment_status = 'Paid' && date_ordered  BETWEEN '$from' AND '$to'";
-			$view_invoice1 = mysqli_query($connection, $query1);
-			$total_invoice = mysqli_num_rows($view_invoice1);
-			$total = ceil($total_invoice/$perpage);
-			$Previous = (int)$page - 1;
-			$Next = (int)$page + 1; 
-      
-        $result = mysqli_query($connection, "SELECT SUM(amount) AS value_sum FROM cart WHERE payment_status = 'Paid' && date_ordered  BETWEEN '$from' AND '$to'"); 
-        $row = mysqli_fetch_assoc($result); 
-        $sum = $row['value_sum'];
-        echo '<b>Total Amount: </b>&#8358;'.number_format($sum,2);
-        echo "<br>";
-        echo "<br>";
-        
-        $query = "SELECT * FROM cart WHERE payment_status = 'Paid' && date_ordered BETWEEN '$from' AND '$to' LIMIT $page_1, $perpage";
-        $sales_query = mysqli_query($connection, $query);
-		$number_of_rows = mysqli_num_rows($sales_query);
-        
-echo "<b>Number of Sales: {$number_of_rows} Results</b>";
-echo "<br>";
-echo "<br>";
-echo "<b>Report of Successful Sales Made from {$from} to {$to}</b>";
-echo "<br>";
-echo "<br>";
-echo "<table class='css-serial table table-hover table-bordered table-striped table-responsive'>"; 
-		
-echo "<tr><th>Customer Name</th><th>Product Name</th><th>Product Number</th><th>Price</th><th>Quantity</th><th>Amount</th><th>Order Number</th><th>payment_status</th><th>Date</th></tr>";
-		
-while($row = mysqli_fetch_array($sales_query)){ 
-echo "<tr><td>" . $row['customer_name'] . "</td><td>" . $row['product_name'] . "</td><td>" . $row['product_number'] . "</td><td>" .'&#8358;'. $row['price'] . "</td><td>" . $row['quantity'] . "</td><td>" .'&#8358;'. $row['amount'] . "</td><td>" . $row['order_number'] . "</td><td>" . $row['payment_status'] . "</td><td>" . $row['date_ordered'] . "</td></tr>";  
+<p class="card-title mb-0">SALES REPORT (SUCCESSFUL TRANSACTIONS)</p><hr>
+
+<div class="row">
+<div class="card">
+<div class="card-body">
+
+<form class="form-inline" method="get" action="">
+<label>From:&nbsp;&nbsp;</label>
+<input type="date" class="form-control mb-2 mr-sm-2" name="from" required>
+
+<label>To:&nbsp;&nbsp;</label>
+<input type="date" class="form-control mb-2 mr-sm-2" name="to" required>
+
+<button type="submit" class="btn btn-dark mb-2" name="submit">
+Display Report
+</button>
+</form>
+
+</div>
+</div>
+</div>
+
+<?php
+
+if(isset($_GET['submit'])){
+
+    $from = $_GET['from'] ?? '';
+    $to = $_GET['to'] ?? '';
+
+    if(!empty($from) && !empty($to)){
+
+        /* =========================
+           PAGINATION SETUP
+        ========================= */
+        $perpage = 20;
+        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $page_1 = ($page - 1) * $perpage;
+
+        /* =========================
+           COUNT QUERY (FAST INDEXED)
+        ========================= */
+        $countStmt = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM cart 
+            WHERE payment_status = 'Paid'
+            AND date_ordered BETWEEN :from AND :to
+        ");
+
+        $countStmt->execute([
+            ':from' => $from,
+            ':to' => $to
+        ]);
+
+        $total_invoice = (int)$countStmt->fetchColumn();
+        $total = ceil($total_invoice / $perpage);
+
+        /* =========================
+           SUM QUERY (FAST AGGREGATION)
+        ========================= */
+        $sumStmt = $pdo->prepare("
+            SELECT SUM(amount) 
+            FROM cart 
+            WHERE payment_status = 'Paid'
+            AND date_ordered BETWEEN :from AND :to
+        ");
+
+        $sumStmt->execute([
+            ':from' => $from,
+            ':to' => $to
+        ]);
+
+        $sum = $sumStmt->fetchColumn() ?? 0;
+
+        echo "<b>Total Amount: </b>&#8358;" . number_format($sum, 2);
+        echo "<br><br>";
+
+        /* =========================
+           INFO OUTPUT
+        ========================= */
+        echo "<b>Number of Sales: {$total_invoice} Results</b><br><br>";
+        echo "<b>Report of Successful Sales Made from {$from} to {$to}</b><br><br>";
+
+        /* =========================
+           DATA QUERY (OPTIMIZED)
+        ========================= */
+        $stmt = $pdo->prepare("
+            SELECT customer_name, product_name, product_number, price, quantity, amount, order_number, payment_status, date_ordered
+            FROM cart
+            WHERE payment_status = 'Paid'
+            AND date_ordered BETWEEN :from AND :to
+            ORDER BY date_ordered DESC
+            LIMIT :limit OFFSET :offset
+        ");
+
+        $stmt->bindValue(':from', $from);
+        $stmt->bindValue(':to', $to);
+        $stmt->bindValue(':limit', $perpage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $page_1, PDO::PARAM_INT);
+        $stmt->execute();
+
+        echo "<table class='css-serial table table-hover table-bordered table-striped table-responsive'>";
+
+        echo "<tr>
+            <th>Customer Name</th>
+            <th>Product Name</th>
+            <th>Product Number</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Amount</th>
+            <th>Order Number</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>";
+
+        while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+            echo "<tr>
+                <td>{$row['customer_name']}</td>
+                <td>{$row['product_name']}</td>
+                <td>{$row['product_number']}</td>
+                <td>&#8358;" . number_format($row['price'], 2) . "</td>
+                <td>{$row['quantity']}</td>
+                <td>&#8358;" . number_format($row['amount'], 2) . "</td>
+                <td>{$row['order_number']}</td>
+                <td>{$row['payment_status']}</td>
+                <td>{$row['date_ordered']}</td>
+            </tr>";
+        }
+
+        echo "</table>";
+    }
 }
+?>
 
-echo "</table>";
-	}	
-	}
-    ?>              
-    <tr style='color:grey;'></tr>                
-                  
-                </div>
-              </div>
-            </div>
-          </div>
-<!--    Pagination-->
-    <div class="row">
-        <div class="col-md-10">
-            <nav aria-label="Page navigation">
-                <h6>Page Number(s):</h6>
-               <ul class="pagination">
-<!--
-                  <li>
-                <a href="sales_report_success.php?page=<?= $Previous; ?>" aria-label="Previous">
-                       <span aria-hidden="true"><button class="btn btn-md btn-dark"><i class="fa fa-arrow-left" aria-hidden="true"></i>&nbsp;Previous</button></span>   
-                      </a>
-                  </li>
--->
-                <?php
-                error_reporting(E_ALL ^ E_WARNING); 
-                for($i=1; $i<=$total; $i++){
-                if($i == $page){
-                echo "<li><a href='sales_report_success?page={$i}&from={$from}&to={$to}&submit='>&nbsp;&nbsp;<button type='button' class='btn btn-outline-dark btn-icon'>{$i}</button>&nbsp;&nbsp;</a></li>";
-                }else{
-                echo "<li><a href='sales_report_success?page={$i}&from={$from}&to={$to}&submit='>&nbsp;&nbsp;<button type='button' class='btn btn-outline-dark btn-icon'>{$i}</button>&nbsp;&nbsp;</a></li>"; 
-                }
-                }
-                ?>
-<!--
-                   <li>
-                <a href="sales_report_success.php?page=<?= $Next; ?>" aria-label="Next">
-                        <span aria-hidden="true"><button class="btn btn-md btn-dark">Next&nbsp;<i class="fa fa-arrow-right" aria-hidden="true"></i></button> </span>
-                       </a>
-                   </li>
--->
-               </ul>
-                
-            </nav>
-        </div>
-    </div>                
-    <style>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PAGINATION -->
+<div class="row">
+<div class="col-md-10">
+<nav>
+<h6>Page Number(s):</h6>
+<ul class="pagination">
+
+<?php
+if(isset($total, $from, $to)){
+
+    for($i = 1; $i <= $total; $i++){
+
+        $active = ($i == $page) ? "btn-primary" : "btn-outline-dark";
+
+        echo "<li>
+            <a href='sales_report_success?page={$i}&from={$from}&to={$to}&submit=1'>
+                <button type='button' class='btn {$active} btn-icon'>{$i}</button>
+            </a>
+        </li>";
+    }
+}
+?>
+
+</ul>
+</nav>
+</div>
+</div>
+
+<style>
 .pagination li .active-link{
-    background: #000 !important
+    background: #000 !important;
 }
+</style>
 
-</style>      
-    
-        </div>     
+</div>
 
-<!-- content-wrapper ends -->
-<!-- partial:partials/_footer.html -->
-<?php include "includes/admin_footer.php"; ?>      
+<?php include "includes/admin_footer.php"; ?>

@@ -1,6 +1,7 @@
+<?php session_start(); ?>
 <?php ob_start(); ?>
 <?php include "includes/db.php" ?>
-<?php session_start(); ?>
+
 <?php include "includes/functions.php" ?>
 
 <!DOCTYPE html>
@@ -50,75 +51,143 @@
               </div>
               <h4>Hello! Admin let's get started</h4>
               <h6 class="font-weight-light">Sign in to continue.</h6>
-<!--Login Code-->
-                
 <?php
-    if (isset($_SESSION['status'])) {
-        ?>
-        <div class="alert alert-success">
-            <h5><?= htmlspecialchars($_SESSION['status']); ?></h5>
-        </div>
-        <?php
-        unset($_SESSION['status']);
-    }
+/* =========================================================
+   SESSION STATUS MESSAGE
+========================================================= */
+if (!empty($_SESSION['status'])):
 ?>
+    <div class="alert alert-success">
+        <h5><?= htmlspecialchars($_SESSION['status'], ENT_QUOTES, 'UTF-8'); ?></h5>
+    </div>
+<?php
+    unset($_SESSION['status']);
+endif;
 
-<?php 
+/* =========================================================
+   ULTRA-FAST PDO LOGIN SYSTEM
+========================================================= */
+
 error_reporting(E_ALL);
 
-if (isset($_POST['login'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
-    $query = "SELECT * FROM user WHERE username = ?";
-    $stmt = $connection->prepare($query);
-    $stmt->bind_param('s', $username);
-    $stmt->execute();
-    $select_user_query = $stmt->get_result();
+    /* =========================
+       SANITIZE INPUTS
+    ========================= */
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-    if ($select_user_query->num_rows > 0) {
-        $row = $select_user_query->fetch_assoc();
-        $db_user_id = escape($row['user_id']);
-        $db_fullname = escape($row['fullname']);
-        $db_username = escape($row['username']);
-        $db_email = escape($row['email']);
-        $db_phone = escape($row['phone']);
-        $db_gender = escape($row['gender']);
-        $db_password = escape($row['password']);
-        $db_role = escape($row['role']);
-        $db_added_on = escape($row['added_on']);
-        $db_verify_status = escape($row['verify_status']);
+    /* =========================
+       VALIDATION
+    ========================= */
+    if (empty($username) || empty($password)) {
 
-        // Check if the user has verified their email
-        if ($db_verify_status != '1') {
-            echo "<div class='alert alert-danger'>Email not verified. Please verify your email before logging in.</div>";
-        } elseif (password_verify($password, $db_password)) {
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = $db_user_id;
-            $_SESSION['fullname'] = $db_fullname;
-            $_SESSION['username'] = $db_username;
-            $_SESSION['email'] = $db_email;
-            $_SESSION['phone'] = $db_phone;
-            $_SESSION['gender'] = $db_gender;
-            $_SESSION['role'] = $db_role;
-            $_SESSION['added_on'] = $db_added_on;
-            $_SESSION['verify_status'] = $db_verify_status;
+        echo "<div class='alert alert-danger'>All fields are required.</div>";
 
-            header("Location: home"); 
-            exit;
-        } else {
-            echo "<div class='alert alert-danger'>Incorrect Username or Password</div>";
-        }
     } else {
-        echo "<div class='alert alert-danger'>Incorrect Username or Password</div>";
-    }
 
-    $stmt->close();
+        try {
+
+            /* =========================================================
+               OPTIMIZED SQL QUERY
+            ========================================================= */
+            $sql = "
+                SELECT 
+                    user_id,
+                    fullname,
+                    username,
+                    email,
+                    phone,
+                    gender,
+                    password,
+                    role,
+                    added_on,
+                    verify_status
+                FROM user
+                WHERE username = :username
+                LIMIT 1
+            ";
+
+            $stmt = $pdo->prepare($sql);
+
+            /* =========================================================
+               BIND PARAMETER
+            ========================================================= */
+            $stmt->bindValue(':username', $username, PDO::PARAM_STR);
+
+            $stmt->execute();
+
+            /* =========================================================
+               FETCH USER
+            ========================================================= */
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user) {
+
+                /* =========================
+                   EMAIL VERIFICATION
+                ========================= */
+                if ($user['verify_status'] != '1') {
+
+                    echo "<div class='alert alert-danger'>
+                            Email not verified. Please verify your email before logging in.
+                          </div>";
+
+                }
+
+                /* =========================
+                   PASSWORD CHECK
+                ========================= */
+                elseif (password_verify($password, $user['password'])) {
+
+                    /* =========================================================
+                       SECURE SESSION
+                    ========================================================= */
+                    session_regenerate_id(true);
+
+                    /* =========================================================
+                       SESSION VARIABLES
+                    ========================================================= */
+                    $_SESSION['user_id']       = (int)$user['user_id'];
+                    $_SESSION['fullname']      = $user['fullname'];
+                    $_SESSION['username']      = $user['username'];
+                    $_SESSION['email']         = $user['email'];
+                    $_SESSION['phone']         = $user['phone'];
+                    $_SESSION['gender']        = $user['gender'];
+                    $_SESSION['role']          = $user['role'];
+                    $_SESSION['added_on']      = $user['added_on'];
+                    $_SESSION['verify_status'] = $user['verify_status'];
+
+                    /* =========================================================
+                       REDIRECT
+                    ========================================================= */
+                    header("Location: home");
+                    exit;
+
+                } else {
+
+                    echo "<div class='alert alert-danger'>
+                            Incorrect Username or Password
+                          </div>";
+                }
+
+            } else {
+
+                echo "<div class='alert alert-danger'>
+                        Incorrect Username or Password
+                      </div>";
+            }
+
+        } catch (PDOException $e) {
+
+            echo "<div class='alert alert-danger'>
+                    Database connection error.
+                  </div>";
+        }
+    }
 }
 ?>
-    
-                
-<!--End of Login Code-->
                 
             <form class="pt-3" action="" method="post">
                 <div class="form-group">

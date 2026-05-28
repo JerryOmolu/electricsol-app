@@ -1,125 +1,194 @@
 <?php include "includes/admin_header.php"; ?>
+
 <?php 
 if(!is_admin($_SESSION['username'])){
     header('Location:home.php');
+    exit;
 }
-
 ?>
 
 <div class="container-scroller">
-<!-- partial:partials/_navbar.html -->
-<?php include "includes/top_nav.php"; ?>   
-<!-- partial -->
-<div class="container-fluid page-body-wrapper">
-  
 
-<!-- partial:partials/_sidebar.html -->
+<?php include "includes/top_nav.php"; ?>   
+
+<div class="container-fluid page-body-wrapper">
+
 <?php include "includes/sidenav.php"; ?>      
 
-<!-- partial -->
 <div class="main-panel">
 <div class="content-wrapper">
+
 <?php include "includes/welcome.php"; ?>   
 
-<!--    Main Content Wrapper-->
-          <div class="row">
-            <div class="col-md-12 grid-margin stretch-card">
-              <div class="card">
-                <div class="card-body">
-                  <p class="card-title">EDIT USER</p><hr>
-                  <div class="row">
-            <div class="col-6 grid-margin stretch-card">
-              <div class="card">
-                <div class="card-body">
-                    
-<!--Edit User Code-->
+<div class="row">
+<div class="col-md-12 grid-margin stretch-card">
+<div class="card">
+<div class="card-body">
+
+<p class="card-title">EDIT USER</p><hr>
+
+<div class="row">
+<div class="col-6 grid-margin stretch-card">
+<div class="card">
+<div class="card-body">
+
 <?php 
+
+/* =========================
+   DEFAULT VARIABLES
+========================= */
+$user_id = $fullname = $username = $email = $phone = $gender = "";
+$password = $role = $added_on = $added_by = "";
+
+/* =========================
+   FETCH USER (PDO FAST MODE)
+========================= */
 if(isset($_GET['edit_user'])){
-    $the_user_id = escape($_GET['edit_user']);
-    $query = "SELECT * FROM user WHERE user_id = $the_user_id ";
-        $select_users = mysqli_query($connection, $query);
-        while($row = mysqli_fetch_assoc($select_users)){
-        $user_id = escape($row['user_id']);
-		$fullname = escape($row['fullname']);
-		$username = escape($row['username']);
-		$email = escape($row['email']);
-		$phone = escape($row['phone']);
-		$gender = escape($row['gender']);
-		$password = escape($row['password']);
-		$role = escape($row['role']);
-		$added_on = escape($row['added_on']);
-		$added_by = escape($row['added_by']);
+
+    $the_user_id = (int) $_GET['edit_user'];
+
+    $stmt = $pdo->prepare("SELECT * FROM user WHERE user_id = :id LIMIT 1");
+    $stmt->bindParam(':id', $the_user_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if($row){
+        $user_id   = htmlspecialchars($row['user_id']);
+        $fullname  = htmlspecialchars($row['fullname']);
+        $username  = htmlspecialchars($row['username']);
+        $email     = htmlspecialchars($row['email']);
+        $phone     = htmlspecialchars($row['phone']);
+        $gender    = htmlspecialchars($row['gender']);
+        $role      = htmlspecialchars($row['role']);
+        $added_on  = htmlspecialchars($row['added_on']);
+        $added_by  = htmlspecialchars($row['added_by']);
+    }
 }
 
-
+/* =========================
+   UPDATE USER (PDO OPTIMIZED)
+========================= */
 if(isset($_POST['edit_user'])){
-    $name = escape($_POST['name']);
-    $username = escape($_POST['username']);
-    $email = escape($_POST['email']);
-    $phone = escape($_POST['phone']);
-    $password = escape($_POST['password']);
-    $role = escape($_POST['role']);
-    
-    $password= password_hash ($password, PASSWORD_BCRYPT, array('cost' => 10));
 
-    
-    $query = "UPDATE user SET email = '{$email}', phone = '{$phone}', role = '{$role}', password = '{$password}' WHERE user_id = {$the_user_id} ";
-    $update_user = mysqli_query($connection,$query);
-    if(!$update_user){
-   die('QUERY FAILED' . mysqli_error($connection));
-   }
-    echo "<div class='alert alert-success'>User Edited Successfully:" . " " . "&nbsp;&nbsp;&nbsp;<a href='view_users.php'><button class='btn btn-primary'>View Users</button></a></div>";
-}
+    $email  = $_POST['email'];
+    $phone  = $_POST['phone'];
+    $role   = $_POST['role'];
 
+    $password = $_POST['password'] ?? '';
+
+    // Build query dynamically (only hash if password is provided)
+    if(!empty($password)){
+
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 10]);
+
+        $stmt = $pdo->prepare("
+            UPDATE user 
+            SET email = :email,
+                phone = :phone,
+                role = :role,
+                password = :password
+            WHERE user_id = :id
+        ");
+
+        $stmt->bindParam(':password', $hashedPassword);
+
+    } else {
+
+        $stmt = $pdo->prepare("
+            UPDATE user 
+            SET email = :email,
+                phone = :phone,
+                role = :role
+            WHERE user_id = :id
+        ");
+    }
+
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':phone', $phone);
+    $stmt->bindParam(':role', $role);
+    $stmt->bindParam(':id', $the_user_id, PDO::PARAM_INT);
+
+    if($stmt->execute()){
+        echo "<div class='alert alert-success'>
+                User Edited Successfully:&nbsp;&nbsp;&nbsp;
+                <a href='view_users.php'>
+                    <button class='btn btn-primary'>View Users</button>
+                </a>
+              </div>";
+    } else {
+        echo "<div class='alert alert-danger'>Update failed. Please try again.</div>";
+    }
 }
 
 ?>
-<!--End of Edit User Code-->
-                    
-                    
-                    
-                    
-                  <form class="forms-sample" action="" method="post" enctype="multipart/form-data">
-                    <div class="form-group">
-                      <label for="exampleInputName1">Name</label>
-                      <input type="text" class="form-control" id="exampleInputName1" placeholder="Full Name" name="name" maxlength="50" autocomplete="off" value="<?php echo $fullname; ?>" readonly>
-                    </div>
-                    <div class="form-group">
-                      <label for="exampleInputUserName1">Username</label>
-                      <input type="text" class="form-control" id="exampleInputName1" placeholder="Prefered Username" name="username" maxlength="50" autocomplete="off" value="<?php echo $username; ?>" readonly>
-                    </div>
-                    <div class="form-group">
-                      <label for="exampleInputEmail3">Email address</label>
-                      <input type="email" class="form-control" id="exampleInputEmail3" placeholder="Email Address" name="email" value="<?php echo $email; ?>">
-                    </div>
-                    <div class="form-group">
-                      <label for="exampleInputPhone">Phone Number</label>
-                      <input type="text" class="form-control" id="exampleInputEmail3" placeholder="Phone Number" name="phone" maxlength="11" value="<?php echo $phone; ?>">
-                    </div>
-                    <div class="form-group">
-                      <label for="exampleInputPassword4">Password</label>
-                      <input type="password" class="form-control" id="exampleInputPassword4" placeholder="Password" name="password">
-                    </div>
-                    <div class="form-group">
-                      <label for="exampleInputCity1">User Role</label>
-                      <select class="form-control" id="exampleSelectRole" name="role" required>
-                          <option value='<?php echo $role; ?>'><?php echo $role; ?></option>
-                          <option value="Admin">Admin</option>
-                          <option value="Manager">Manager</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary col-6 mr-2" name="edit_user"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Update User</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-                  </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-        </div>     
 
-<!-- content-wrapper ends -->
-<!-- partial:partials/_footer.html -->
-<?php include "includes/admin_footer.php"; ?>      
+<!-- =========================
+     UI (UNCHANGED)
+========================= -->
+
+<form class="forms-sample" action="" method="post" enctype="multipart/form-data">
+
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" class="form-control"
+               name="name"
+               value="<?php echo $fullname; ?>" readonly>
+    </div>
+
+    <div class="form-group">
+        <label>Username</label>
+        <input type="text" class="form-control"
+               name="username"
+               value="<?php echo $username; ?>" readonly>
+    </div>
+
+    <div class="form-group">
+        <label>Email address</label>
+        <input type="email" class="form-control"
+               name="email"
+               value="<?php echo $email; ?>">
+    </div>
+
+    <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" class="form-control"
+               name="phone"
+               maxlength="11"
+               value="<?php echo $phone; ?>">
+    </div>
+
+    <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-control"
+               name="password"
+               placeholder="Leave empty to keep current password">
+    </div>
+
+    <div class="form-group">
+        <label>User Role</label>
+        <select class="form-control" name="role" required>
+            <option value="<?php echo $role; ?>"><?php echo $role; ?></option>
+            <option value="Admin">Admin</option>
+            <option value="Manager">Manager</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary col-6 mr-2" name="edit_user">
+        <i class="fa fa-pencil-square-o"></i> Update User
+    </button>
+
+</form>
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+</div>
+
+<?php include "includes/admin_footer.php"; ?>

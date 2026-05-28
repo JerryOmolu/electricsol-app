@@ -45,92 +45,146 @@ if(!is_admin($_SESSION['username'])){
               <div class="card">
                 <div class="card-body">
 <!--Add Product Code-->
-<?php 
+<?php
 if (isset($_POST['add_product'])) {
-    $name = escape($_POST['name']);
-    $detail = escape($_POST['detail']);
-    $number = escape($_POST['number']);
-    $category = escape($_POST['category']);
-    $price = escape($_POST['price']);
-    $keywords = escape($_POST['keywords']);
-    $stock = escape($_POST['stock']);
-    
-    // Define maximum and minimum dimensions
-    $minWidth = 800; // Minimum width in pixels
-    $minHeight = 800; // Minimum height in pixels
-    $maxWidth = 800; // Maximum width in pixels
-    $maxHeight = 800; // Maximum height in pixels
-    
-    // Allowed file types
-    $allowedFileTypes = ['image/jpeg', 'image/png'];
-    
-    // Function to check image dimensions
-    function checkImageDimensions($tempFile) {
-        list($width, $height) = getimagesize($tempFile);
-        return [$width, $height];
-    }
-    
-    $errors = array();
+
+    // =========================
+    // DB CONNECTION (PDO assumed as $pdo)
+    // =========================
+    require_once "includes/db.php"; // must provide $pdo (PDO instance)
+
+    // =========================
+    // INPUTS (no manual escape needed in PDO)
+    // =========================
+    $name     = trim($_POST['name'] ?? '');
+    $detail   = trim($_POST['detail'] ?? '');
+    $number   = trim($_POST['number'] ?? '');
+    $category = trim($_POST['category'] ?? '');
+    $price    = trim($_POST['price'] ?? '');
+    $keywords = trim($_POST['keywords'] ?? '');
+    $stock    = trim($_POST['stock'] ?? '');
+
+    $errors = [];
     $images = [];
 
-    // Check dimensions and file type for each image
+    // =========================
+    // IMAGE VALIDATION RULES
+    // =========================
+    $minWidth = 800;
+    $minHeight = 800;
+    $maxWidth = 800;
+    $maxHeight = 800;
+
+    $allowedFileTypes = ['image/jpeg', 'image/png'];
+
+    function checkImageDimensions($file)
+    {
+        return getimagesize($file);
+    }
+
     foreach (['image_one', 'image_two', 'image_three'] as $imageKey) {
-        $imageTemp = $_FILES[$imageKey]['tmp_name'];
-        $imageType = $_FILES[$imageKey]['type'];
-        $imageName = $_FILES[$imageKey]['name'];
 
-        // Check if file exists and is of an allowed type
-        if (file_exists($imageTemp)) {
-            // Validate file type
+        $imageTemp = $_FILES[$imageKey]['tmp_name'] ?? null;
+        $imageType = $_FILES[$imageKey]['type'] ?? null;
+        $imageName = $_FILES[$imageKey]['name'] ?? null;
+
+        if (!empty($imageTemp) && file_exists($imageTemp)) {
+
             if (!in_array($imageType, $allowedFileTypes)) {
-                $errors[$imageKey] = ucfirst($imageKey) . " must be a JPEG or PNG file.";
-                continue; // Skip further checks for this image
+                $errors[$imageKey] = ucfirst($imageKey) . " must be JPEG or PNG.";
+                continue;
             }
 
-            // Check dimensions
             list($width, $height) = checkImageDimensions($imageTemp);
+
             if ($width < $minWidth || $height < $minHeight) {
-                $errors[$imageKey] = ucfirst($imageKey) . " must be at least {$minWidth}px wide and {$minHeight}px tall.";
+                $errors[$imageKey] = ucfirst($imageKey) . " is too small (min 800x800).";
             } elseif ($width > $maxWidth || $height > $maxHeight) {
-                $errors[$imageKey] = ucfirst($imageKey) . " must not exceed {$maxWidth}px wide and {$maxHeight}px tall.";
+                $errors[$imageKey] = ucfirst($imageKey) . " exceeds allowed size (max 800x800).";
             } else {
-                // Store image names if the dimensions and type are valid
-                $images[$imageKey] = escape($imageName);
+                $images[$imageKey] = basename($imageName);
             }
+        } else {
+            $errors[$imageKey] = ucfirst($imageKey) . " is required.";
         }
     }
 
-    // Check for product number uniqueness
-    $n = "SELECT product_number FROM product WHERE product_number = '$number' LIMIT 1";
-    $nn = mysqli_query($connection, $n);
+    // =========================
+    // PRODUCT NUMBER CHECK (OPTIMIZED)
+    // =========================
     if (empty($number)) {
-        $errors['n'] = "Product Number Cannot be Empty, Please Enter Product Number";
-    } elseif (mysqli_num_rows($nn) > 0) {
-        $errors['n'] = "Product Number already exists for another Product";
-    }
-    
-    if (isset($_SESSION['fullname'])) {
-        $fullname = escape($_SESSION['fullname']);
-    }
-
-    // Only proceed if there are no errors
-    if (count($errors) == 0 && !empty($name) && !empty($detail) && !empty($number) && !empty($category) && !empty($price) && !empty($keywords) && !empty($stock)) {
-        // Move images if there are no errors
-        foreach ($images as $imageKey => $imageName) {
-            $imageTemp = $_FILES[$imageKey]['tmp_name'];
-            move_uploaded_file($imageTemp, "images/products/$imageName");
-        }
-
-        $query = "INSERT INTO product(product_name, product_details, product_number, category, price, keywords, image_one, image_two, image_three, stock_level, added_by) VALUES ('{$name}', '{$detail}', '{$number}', '{$category}', '{$price}', '{$keywords}', '{$images['image_one']}', '{$images['image_two']}', '{$images['image_three']}', '{$stock}', '{$fullname}')";
-        
-        $create_post_query = mysqli_query($connection, $query);
-        
-        if (!$create_post_query) {
-            die('QUERY FAILED' . mysqli_error($connection));
-        }
-        echo "<div class='alert alert-success'><b>Product Added Successfully &nbsp;&nbsp;&nbsp;<a href='view_products'><button class='btn btn-primary'>View Products</button></a></b></div>";
+        $errors['number'] = "Product Number Cannot be Empty";
     } else {
-        // Display the errors
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM product WHERE product_number = :number");
+        $stmt->execute(['number' => $number]);
+        $exists = $stmt->fetchColumn();
+
+        if ($exists > 0) {
+            $errors['number'] = "Product Number already exists";
+        }
+    }
+
+    // =========================
+    // SESSION USER
+    // =========================
+    $fullname = $_SESSION['fullname'] ?? 'Unknown';
+
+    // =========================
+    // FINAL VALIDATION
+    // =========================
+    if (
+        empty($errors) &&
+        $name && $detail && $number && $category &&
+        $price && $keywords && $stock
+    ) {
+
+        // =========================
+        // MOVE IMAGES
+        // =========================
+        foreach ($images as $key => $fileName) {
+            move_uploaded_file(
+                $_FILES[$key]['tmp_name'],
+                "images/products/" . $fileName
+            );
+        }
+
+        // =========================
+        // INSERT PRODUCT (PDO PREPARED)
+        // =========================
+        $sql = "INSERT INTO product
+        (product_name, product_details, product_number, category, price, keywords,
+         image_one, image_two, image_three, stock_level, added_by)
+        VALUES
+        (:name, :detail, :number, :category, :price, :keywords,
+         :img1, :img2, :img3, :stock, :added_by)";
+
+        $stmt = $pdo->prepare($sql);
+
+        $result = $stmt->execute([
+            'name'     => $name,
+            'detail'   => $detail,
+            'number'   => $number,
+            'category' => $category,
+            'price'    => $price,
+            'keywords' => $keywords,
+            'img1'     => $images['image_one'],
+            'img2'     => $images['image_two'],
+            'img3'     => $images['image_three'],
+            'stock'    => $stock,
+            'added_by' => $fullname
+        ]);
+
+        if ($result) {
+            echo "<div class='alert alert-success'>
+                    <b>Product Added Successfully &nbsp;&nbsp;&nbsp;
+                    <a href='view_products'><button class='btn btn-primary'>View Products</button></a>
+                    </b>
+                  </div>";
+        } else {
+            echo "<div class='alert alert-danger'>Failed to add product.</div>";
+        }
+
+    } else {
         foreach ($errors as $error) {
             echo "<div class='alert alert-danger'>$error</div>";
         }
