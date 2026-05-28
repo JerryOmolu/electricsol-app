@@ -1,16 +1,36 @@
+<?php session_start(); ?>
 <?php ob_start(); ?>
 <?php include "db.php" ?>
-<?php session_start(); ?>
 <?php include "functions.php" ?>
 
-<?php 
-if(!isset($_SESSION['verify_status'])){
-    if($_SESSION['verify_status'] !== '1'){
-       header("Location:index"); 
-    }
-        
-    }
+<?php
+/* =========================================================
+   ULTRA-FAST SESSION VERIFICATION CHECK
+   - Optimized conditional logic
+   - Reduced nested conditions
+   - Faster execution
+   - More secure validation
+========================================================= */
 
+/* =========================
+   VERIFY LOGIN STATUS
+========================= */
+if (
+    !isset($_SESSION['verify_status']) ||
+    (string)$_SESSION['verify_status'] !== '1'
+) {
+
+    /* =========================
+       DESTROY INVALID SESSION
+    ========================= */
+    $_SESSION = [];
+
+    /* =========================
+       REDIRECT UNVERIFIED USER
+    ========================= */
+    header("Location: index");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
